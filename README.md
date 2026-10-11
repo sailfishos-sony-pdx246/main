@@ -9,7 +9,7 @@ A community port of Sailfish OS 5.1.0.11 to the Sony Xperia 10 VI (XQ-ES54, XQ-E
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
 **Status:** in development; no image is released yet. To try it, build it yourself
-([BUILD.md](BUILD.md)). Flashing instructions will follow with the first image.
+([BUILD.md](BUILD.md)) and flash it ([INSTALL.md](INSTALL.md)).
 
 ## What works
 
