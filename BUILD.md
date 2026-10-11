@@ -5,8 +5,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Building Sailfish OS for the Sony Xperia 10 VI (pdx246)
 
-> **Draft (2026-10-11).** This describes the build as it is done today. It has not yet been
-> proven by a build from scratch on a clean machine. The port's repositories are at
+> **Draft (2026-10-11).** This describes the build as it is done today. The source steps
+> (section 3: sync with these manifests, submodules, hybris patches, this port's patches) were
+> tested on 2026-10-11 and reproduce the developer's tree file for file; a complete build from
+> scratch on a clean machine has not been done yet. The port's repositories are at
 > https://github.com/sailfishos-sony-pdx246.
 
 The port runs Sailfish OS 5.1.0.11 on top of the LineageOS 23.2 (Android 16 QPR2) port for the
@@ -89,7 +91,15 @@ repo init -u https://github.com/mer-hybris/android.git -b hybris-23.2 --git-lfs 
 mkdir -p .repo/local_manifests
 cp <main>/local_manifests/*.xml .repo/local_manifests/
 repo sync -c -j8 --no-clone-bundle --retry-fetches=2 --force-sync
+for p in rpm hybris/droid-configs hybris/droid-hal-version-pdx246 \
+        hybris/mw/droid-hal-img-boot-pdx246 hybris/mw/libhybris; do
+    git -C $p submodule update --init --recursive
+done
 ```
+
+The last loop checks out the submodules of the adaptation repositories and libhybris (mer-hybris'
+droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybris' source):
+`repo sync` records them but does not check them out.
 
 - **Never** pass `--reference <your LineageOS checkout>` to `repo init`: it borrows objects
   from that tree through alternates without telling you, and a later `git gc` or the removal of
