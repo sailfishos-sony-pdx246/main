@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: Johannes Meyer zum Alten Borgloh
+     SPDX-License-Identifier: BSD-3-Clause
+
+     The Sailfish OS side of the pdx246 port: the adaptation repos at the paths the HADK
+     scripts expect, the middleware with this port's fixes, and the default middleware pinned
+     to the commits the port is built and tested with. build_packages.sh -o builds what is
+     checked out here and only clones what is missing.
+     DRAFT: NAMESPACE stands for the GitHub organisation or account of the port (not decided);
+     none of these repos is pushed yet. Before publishing: push libhybris' source fork with
+     92ccb48 and point the packaging repo's .gitmodules at it, and push droid-bthelper's tag
+     0.3.0 (build_packages.sh -o derives the version from it). -->
+<manifest>
+  <remote name="pdx246" fetch="https://github.com/NAMESPACE" />
+
+  <!-- Adaptation -->
+  <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
+           revision="2fd48e465725a6b472e27427c0223c4ee1621c61" upstream="main" sync-s="true" />
+  <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
+           revision="629e723c38ed49c2f8026fe9957b014b15583326" upstream="main" sync-s="true" />
+  <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
+           revision="b2140863209a03ea4b0ae3d0337ff713a788e16d" upstream="main" sync-s="true" />
+  <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
+           revision="e00164155b6035c7bd370a9ce417d3951c6edb82" upstream="main" sync-s="true" />
+
+  <!-- Middleware with this port's fixes -->
+  <project path="hybris/mw/libhybris" name="libhybris" remote="pdx246"
+           revision="b135d159961b5d6ef72b1db126cd80f41a930d8c" upstream="pdx246-0.0.5.58" sync-s="true" />
+  <project path="hybris/mw/ofono-binder-plugin-ext-qti" name="ofono-binder-plugin-ext-qti" remote="pdx246"
+           revision="e912b7c759ae86693e098da6e477a878244484a8" upstream="pdx246-0.1.1-aidl" />
+  <project path="hybris/mw/geoclue-providers-hybris" name="geoclue-providers-hybris" remote="pdx246"
+           revision="6ba81f2b846cb0c4bd1076a22b3ab928714a3992" upstream="pdx246-0.3.1" />
+  <project path="hybris/mw/libncicore" name="libncicore" remote="pdx246"
+           revision="aa586b5b8d706710940d24494d7f9a0caefe4c69" upstream="pdx246-1.2.0" />
+  <project path="hybris/mw/nfcd-binder-plugin" name="nfcd-binder-plugin" remote="pdx246"
+           revision="a9598ebfa8e6de81c1c7e2e58b6e2ba81f223f3d" upstream="pdx246-1.2.0" />
+  <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
+           revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
+
+  <!-- Default middleware, upstream, pinned -->
+  <project path="hybris/mw/pulseaudio-modules-droid" name="mer-hybris/pulseaudio-modules-droid" remote="github"
+           revision="65edd31f62f22e2eec1f765608ca9c6ae5c4af7b" upstream="master" sync-s="true" />
+  <project path="hybris/mw/pulseaudio-modules-droid-hidl" name="mer-hybris/pulseaudio-modules-droid-hidl" remote="github"
+           revision="818df80bcb593250941d03150b236128da7fbc6a" upstream="master" sync-s="true" />
+  <project path="hybris/mw/mce-plugin-libhybris" name="mer-hybris/mce-plugin-libhybris" remote="github"
+           revision="2c48a3f1724b9e82acd13addb70f3201508c811a" upstream="master" sync-s="true" />
+  <project path="hybris/mw/qt5-qpa-hwcomposer-plugin" name="mer-hybris/qt5-qpa-hwcomposer-plugin" remote="github"
+           revision="31f4f6506702bd872ac47305fc8f8d75f2bb047b" upstream="master" sync-s="true" />
+  <project path="hybris/mw/sensorfw" name="sailfishos/sensorfw" remote="github"
+           revision="b889c3d20254e44bc408e64449562c84898506f1" upstream="master" sync-s="true" />
+  <project path="hybris/mw/parse-android-dynparts" name="sailfish-on-nabu/parse-android-dynparts" remote="github"
+           revision="4e6f70fd9b7270a39b9f1c1d19ee580da1d89374" upstream="master" sync-s="true" />
+  <project path="hybris/mw/community-adaptation" name="mer-hybris/community-adaptation" remote="github"
+           revision="8afd97564b5d514d75c261ac995eb9fc58b58415" upstream="master" sync-s="true" />
+</manifest>

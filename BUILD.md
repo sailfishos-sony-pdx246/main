@@ -102,10 +102,10 @@ repo sync -c -j8 --no-clone-bundle --retry-fetches=2 --force-sync
 
 | File | What |
 |---|---|
-| `pdx246.xml` | device tree, kernel, kernel modules, kernel device trees and `hardware/sony` of the LineageOS port, pinned by SHA; the device tree and kernel at their `hybris-23.2` branches **(once published)** |
+| `pdx246.xml` | device tree, kernel, kernel modules, kernel device trees (github.com/johanneszab) and `hardware/sony` (LineageOS), pinned by SHA; the device tree and kernel at their `hybris-23.2` branches **(once pushed)** |
 | `halium.xml` | `vendor/halium/hardware` (the audio compatibility layer `audio.hidl_compat`), Halium `halium-16.0` at 0cc91ec |
 | `droidmedia.xml` | `sailfishos/droidmedia` at `master` (the hybris-23.2 manifest pins branch `android15`, which was merged and deleted upstream) |
-| `sailfish.xml` **(once published)** | this port's Sailfish repositories (section 5) at their paths in the tree |
+| `sailfish.xml` | the adaptation repositories and the middleware of section 5 at their paths in the tree, all pinned; this port's own repositories under `NAMESPACE` **(once published)** |
 
 **Vendor blobs:** extract them as for LineageOS, with the device tree's `extract-files.py`
 (from the stock firmware or a phone running the pinned LineageOS release). The port does not
@@ -163,8 +163,8 @@ host with a warm ccache.
 
 ## 5. Build the packages and the image
 
-Middleware with this port's fixes lives in `hybris/mw/`, at these branches **(once published,
-checked out by `sailfish.xml`; today local clones)**. `build_packages.sh` clones any missing
+Middleware with this port's fixes lives in `hybris/mw/`, at these branches (checked out by
+`sailfish.xml` **once published**). `build_packages.sh` clones any missing
 middleware at its upstream branch head, but with `-o` it builds an existing checkout as is,
 so these must be in place first:
 
@@ -186,9 +186,9 @@ And the adaptation repositories, at the paths the HADK scripts expect:
 | `hybris/droid-configs` | droid-config-pdx246 | `droid-configs-device` = mer-hybris/droid-hal-configs |
 | `hybris/droid-hal-version-pdx246` | droid-hal-version-pdx246 | `droid-hal-version` = mer-hybris/droid-hal-version |
 
-For reproducible builds, pin the default middleware too (today's commits): pulseaudio-modules-droid
-65edd31 (14.2.106; `scripts/build-packages-sdk.sh` checks it out), pulseaudio-modules-droid-hidl
-818df80, mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin 31f4f65, sensorfw b889c3d,
+`sailfish.xml` also pins the default middleware to the commits the port is tested with:
+pulseaudio-modules-droid 65edd31 (14.2.106), pulseaudio-modules-droid-hidl 818df80,
+mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin 31f4f65, sensorfw b889c3d,
 parse-android-dynparts 4e6f70f, community-adaptation 8afd975.
 
 Then, from the host (asks for the `sudo` password once, through `sdk-chroot`):

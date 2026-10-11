@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: Johannes Meyer zum Alten Borgloh
+     SPDX-License-Identifier: BSD-3-Clause
+
+     Device repos of the Xperia 10 VI (pdx246) from the LineageOS 23.2 port, pinned by SHA so
+     that repo sync never moves them; bump the pins on purpose.
+     The device tree and the kernel are pinned to their hybris-23.2 branches (the LineageOS
+     release commits plus the Sailfish OS commits); the kernel modules, the kernel device trees
+     and hardware/sony (the device tree's lineage.dependencies, listed here so roomservice never
+     fetches it) are the LineageOS release's own commits.
+     The three kernel paths must keep these names: the kernel tree has a symlink to
+     ../sm6450-devicetrees and the modules tree hard-codes sm6450-modules.
+     DRAFT: the hybris-23.2 branches are not pushed yet. -->
+<manifest>
+  <remote name="johanneszab" fetch="https://github.com/johanneszab" />
+  <project path="device/sony/pdx246" name="android_device_sony_pdx246" remote="johanneszab"
+           revision="d7d70562c4ba3cf0e8e9bea12912df3ae098887e" upstream="hybris-23.2" />
+  <project path="kernel/sony/sm6450" name="android_kernel_sony_sm6450" remote="johanneszab"
+           revision="4a772a180fc69ebc7b47616c803d9fec7884b0f8" upstream="hybris-23.2" />
+  <project path="kernel/sony/sm6450-modules" name="android_kernel_sony_sm6450-modules" remote="johanneszab"
+           revision="5f823f90b852edf3d8c848a270173113ff523fe9" upstream="lineage-23.2" />
+  <project path="kernel/sony/sm6450-devicetrees" name="android_kernel_sony_sm6450-devicetrees" remote="johanneszab"
+           revision="958dce5aaab6c58df7573843e85398b477d8dc62" upstream="lineage-23.2" />
+  <project path="hardware/sony" name="LineageOS/android_hardware_sony" remote="github"
+           revision="cedda154f4fbd2d1668e2a816dac7350e824645f" upstream="lineage-23.2" />
+</manifest>

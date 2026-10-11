@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The hybris-23.2 manifest pins droidmedia to branch "android15", which was
+     merged into master by PR #133 on 2026-09-02 and then deleted upstream.
+     master carries both "Add support for Android 15" and "Add support for
+     Android 16. JB#63804", so it is the branch the manifest meant. -->
+<manifest>
+  <extend-project name="sailfishos/droidmedia" revision="master" />
+</manifest>
