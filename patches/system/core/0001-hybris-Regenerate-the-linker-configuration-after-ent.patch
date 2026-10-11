@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Tue, 6 Oct 2026 19:31:08 +0200
+Subject: [PATCH] (hybris) Regenerate the linker configuration after
+ enter_default_mount_ns
+
+Android 16's perform_apex_config parses the APEX rc files and runs
+linkerconfig only once per mount namespace (33b0992eba). With
+SetupMountNamespaces() disabled for hybris, GetCurrentMountNamespace()
+always fails, so both the early-init and the post-fs-data call counted as
+the bootstrap namespace and the second one did nothing. By then
+enter_default_mount_ns had bind-mounted the "#" placeholder in
+/linkerconfig/default over /linkerconfig. Every process started after
+post-fs-data ran without linker namespaces: odsign could not find
+libstatspull.so and never set odsign.key.done, so init.rc waited forever
+in post-fs-data and "on boot" never ran.
+
+Remember enter_default_mount_ns and count the following call as the
+default namespace, as with two real namespaces.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: If012ba9121d2b52f07c9397f7b4bafeacad62501
+---
+ init/builtins.cpp | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/init/builtins.cpp b/init/builtins.cpp
+index 2b27e4e5a..d4cc6c84a 100644
+--- a/init/builtins.cpp
++++ b/init/builtins.cpp
+@@ -1245,6 +1245,14 @@ static void create_apex_data_dirs() {
+     }
+ }
+ 
++// (hybris) SetupMountNamespaces() is disabled, so bootstrap_ns_id and default_ns_id stay empty
++// and GetCurrentMountNamespace() always fails. Remember enter_default_mount_ns, so that the
++// post-fs-data perform_apex_config counts as the default namespace: it then parses the APEX rc
++// files and regenerates the linker configuration after /linkerconfig/default was bind-mounted
++// over /linkerconfig. Otherwise /linkerconfig/ld.config.txt stays the "#" placeholder and nothing
++// started after post-fs-data can link against APEX libraries.
++static bool hybris_entered_default_mount_ns = false;
++
+ static Result<void> do_perform_apex_config(const BuiltinArguments& args) {
+     // Do create apex data directories if /data/misc/apexdata exists
+     if (access("/data/misc/apexdata", 0) == 0) {
+@@ -1255,7 +1263,8 @@ static Result<void> do_perform_apex_config(const BuiltinArguments& args) {
+         PLOG(ERROR) << "restorecon failed: " << kApexInfolist;
+     }
+ 
+-    MountNamespace current_mnt_ns = GetCurrentMountNamespace().value_or(NS_BOOTSTRAP);
++    MountNamespace current_mnt_ns = GetCurrentMountNamespace().value_or(
++            hybris_entered_default_mount_ns ? NS_DEFAULT : NS_BOOTSTRAP);
+     // We don't want to parse the same apexes twice in the same mount namespace.
+     static std::map<MountNamespace, bool> apex_parsed;
+     if (!std::exchange(apex_parsed[current_mnt_ns], true)) {
+@@ -1285,6 +1294,7 @@ static Result<void> do_enter_default_mount_ns(const BuiltinArguments& args) {
+     if (auto result = MountLinkerConfigForDefaultNamespace(); !result.ok()) {
+         return result.error();
+     }
++    hybris_entered_default_mount_ns = true;
+     LOG(INFO) << "Switched to default mount namespace";
+     return {};
+ }

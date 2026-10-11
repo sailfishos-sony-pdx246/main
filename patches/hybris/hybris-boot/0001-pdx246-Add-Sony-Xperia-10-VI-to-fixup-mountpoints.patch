@@ -1,0 +1,181 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Sun, 4 Oct 2026 16:00:18 +0200
+Subject: [PATCH 1/2] [pdx246] Add Sony Xperia 10 VI to fixup-mountpoints
+
+Read from the phone (ls -l /dev/block/bootdevice/by-name/ under
+LineageOS 23.2); it matches the GPT of stock firmware 70.2.A.4.168.
+Bare names of slotted partitions map to slot a, as dhd's makefstab
+ignores slotselect. The fstab uses block/by-name/ for metadata and misc,
+so those are mapped under both prefixes.
+
+The sed patterns are unanchored substrings, so the entries are sorted
+longest path first: boot_b is replaced before boot, modemst1 before
+modem.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I331efd7d900fa7aa76cbbf5b35dff43b89d8c939
+---
+ fixup-mountpoints | 149 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 149 insertions(+)
+
+diff --git a/fixup-mountpoints b/fixup-mountpoints
+index e4e3984..f57c362 100755
+--- a/fixup-mountpoints
++++ b/fixup-mountpoints
+@@ -14,6 +14,155 @@ shift
+ echo "Fixing mount-points for device $DEVICE"
+ 
+ case "$DEVICE" in
++    "pdx246")
++        # Sony Xperia 10 VI. Read from the phone (ls -l /dev/block/bootdevice/by-name/);
++        # identical to the GPT of stock firmware 70.2.A.4.168. Bare names of slotted
++        # partitions map to slot a. Longest paths first: the patterns are unanchored.
++        sed -i \
++            -e 's block/bootdevice/by-name/xbl_sc_test_mode sda65 ' \
++            -e 's block/bootdevice/by-name/vbmeta_system_a sda74 ' \
++            -e 's block/bootdevice/by-name/vbmeta_system_b sda88 ' \
++            -e 's block/bootdevice/by-name/qweslicstore_a sda75 ' \
++            -e 's block/bootdevice/by-name/qweslicstore_b sda89 ' \
++            -e 's block/bootdevice/by-name/xflkeystorebak sda5 ' \
++            -e 's block/bootdevice/by-name/multiimgoem_a sdb4 ' \
++            -e 's block/bootdevice/by-name/multiimgoem_b sdc4 ' \
++            -e 's block/bootdevice/by-name/multiimgqti_a sdb3 ' \
++            -e 's block/bootdevice/by-name/multiimgqti_b sdc3 ' \
++            -e 's block/bootdevice/by-name/tzxflattest_a sda18 ' \
++            -e 's block/bootdevice/by-name/tzxflattest_b sda33 ' \
++            -e 's block/bootdevice/by-name/vbmeta_system sda74 ' \
++            -e 's block/bootdevice/by-name/vendor_boot_a sda79 ' \
++            -e 's block/bootdevice/by-name/vendor_boot_b sda93 ' \
++            -e 's block/bootdevice/by-name/xbl_ramdump_a sda22 ' \
++            -e 's block/bootdevice/by-name/xbl_ramdump_b sda37 ' \
++            -e 's block/bootdevice/by-name/aop_config_a sda9 ' \
++            -e 's block/bootdevice/by-name/aop_config_b sda24 ' \
++            -e 's block/bootdevice/by-name/mdtpsecapp_a sda69 ' \
++            -e 's block/bootdevice/by-name/mdtpsecapp_b sda83 ' \
++            -e 's block/bootdevice/by-name/qweslicstore sda75 ' \
++            -e 's block/bootdevice/by-name/uefisecapp_a sda20 ' \
++            -e 's block/bootdevice/by-name/uefisecapp_b sda35 ' \
++            -e 's block/bootdevice/by-name/uefivarstore sda60 ' \
++            -e 's block/bootdevice/by-name/vm-bootsys_a sda80 ' \
++            -e 's block/bootdevice/by-name/vm-bootsys_b sda94 ' \
++            -e 's block/bootdevice/by-name/xbl_config_a sdb2 ' \
++            -e 's block/bootdevice/by-name/xbl_config_b sdc2 ' \
++            -e 's block/bootdevice/by-name/bluetooth_a sda68 ' \
++            -e 's block/bootdevice/by-name/bluetooth_b sda82 ' \
++            -e 's block/bootdevice/by-name/keymaster_a sda13 ' \
++            -e 's block/bootdevice/by-name/keymaster_b sda28 ' \
++            -e 's block/bootdevice/by-name/limits-cdsp sda46 ' \
++            -e 's block/bootdevice/by-name/multiimgoem sdb4 ' \
++            -e 's block/bootdevice/by-name/multiimgqti sdb3 ' \
++            -e 's block/bootdevice/by-name/tzxflattest sda18 ' \
++            -e 's block/bootdevice/by-name/vendor_boot sda79 ' \
++            -e 's block/bootdevice/by-name/xbl_ramdump sda22 ' \
++            -e 's block/bootdevice/by-name/xbl_sc_logs sda66 ' \
++            -e 's block/bootdevice/by-name/xflkeystore sda4 ' \
++            -e 's block/bootdevice/by-name/aop_config sda9 ' \
++            -e 's block/bootdevice/by-name/mdtpsecapp sda69 ' \
++            -e 's block/bootdevice/by-name/recovery_a sda76 ' \
++            -e 's block/bootdevice/by-name/recovery_b sda90 ' \
++            -e 's block/bootdevice/by-name/uefisecapp sda20 ' \
++            -e 's block/bootdevice/by-name/vm-bootsys sda80 ' \
++            -e 's block/bootdevice/by-name/xbl_config sdb2 ' \
++            -e 's block/bootdevice/by-name/bluetooth sda68 ' \
++            -e 's block/bootdevice/by-name/imagefv_a sda17 ' \
++            -e 's block/bootdevice/by-name/imagefv_b sda32 ' \
++            -e 's block/bootdevice/by-name/keymaster sda13 ' \
++            -e 's block/bootdevice/by-name/LTALabel sda2 ' \
++            -e 's block/bootdevice/by-name/devcfg_a sda15 ' \
++            -e 's block/bootdevice/by-name/devcfg_b sda30 ' \
++            -e 's block/bootdevice/by-name/keystore sda53 ' \
++            -e 's block/bootdevice/by-name/metadata sda54 ' \
++            -e 's block/bootdevice/by-name/modemst1 sda39 ' \
++            -e 's block/bootdevice/by-name/modemst2 sda40 ' \
++            -e 's block/bootdevice/by-name/recovery sda76 ' \
++            -e 's block/bootdevice/by-name/userdata sda96 ' \
++            -e 's block/bootdevice/by-name/vbmeta_a sda73 ' \
++            -e 's block/bootdevice/by-name/vbmeta_b sda87 ' \
++            -e 's block/bootdevice/by-name/appslog sda56 ' \
++            -e 's block/bootdevice/by-name/connsec sda61 ' \
++            -e 's block/bootdevice/by-name/cpucp_a sda14 ' \
++            -e 's block/bootdevice/by-name/cpucp_b sda29 ' \
++            -e 's block/bootdevice/by-name/devinfo sda42 ' \
++            -e 's block/bootdevice/by-name/imagefv sda17 ' \
++            -e 's block/bootdevice/by-name/modem_a sda67 ' \
++            -e 's block/bootdevice/by-name/modem_b sda81 ' \
++            -e 's block/bootdevice/by-name/persist sda3 ' \
++            -e 's block/bootdevice/by-name/qupfw_a sda16 ' \
++            -e 's block/bootdevice/by-name/qupfw_b sda31 ' \
++            -e 's block/bootdevice/by-name/secdata sda58 ' \
++            -e 's block/bootdevice/by-name/storsec sda50 ' \
++            -e 's block/bootdevice/by-name/toolsfv sda55 ' \
++            -e 's block/bootdevice/by-name/vm-data sda59 ' \
++            -e 's block/bootdevice/by-name/boot_a sda72 ' \
++            -e 's block/bootdevice/by-name/boot_b sda86 ' \
++            -e 's block/bootdevice/by-name/devcfg sda15 ' \
++            -e 's block/bootdevice/by-name/dtbo_a sda77 ' \
++            -e 's block/bootdevice/by-name/dtbo_b sda91 ' \
++            -e 's block/bootdevice/by-name/limits sda45 ' \
++            -e 's block/bootdevice/by-name/mdtp_a sda70 ' \
++            -e 's block/bootdevice/by-name/mdtp_b sda84 ' \
++            -e 's block/bootdevice/by-name/rddata sda97 ' \
++            -e 's block/bootdevice/by-name/shrm_a sda19 ' \
++            -e 's block/bootdevice/by-name/shrm_b sda34 ' \
++            -e 's block/bootdevice/by-name/splash sda44 ' \
++            -e 's block/bootdevice/by-name/spunvm sda48 ' \
++            -e 's block/bootdevice/by-name/uefi_a sda21 ' \
++            -e 's block/bootdevice/by-name/uefi_b sda36 ' \
++            -e 's block/bootdevice/by-name/vbmeta sda73 ' \
++            -e 's block/bootdevice/by-name/abl_a sda12 ' \
++            -e 's block/bootdevice/by-name/abl_b sda27 ' \
++            -e 's block/bootdevice/by-name/aop_a sda8 ' \
++            -e 's block/bootdevice/by-name/aop_b sda23 ' \
++            -e 's block/bootdevice/by-name/apdpb sdc5 ' \
++            -e 's block/bootdevice/by-name/cpucp sda14 ' \
++            -e 's block/bootdevice/by-name/dsp_a sda71 ' \
++            -e 's block/bootdevice/by-name/dsp_b sda85 ' \
++            -e 's block/bootdevice/by-name/hyp_a sda11 ' \
++            -e 's block/bootdevice/by-name/hyp_b sda26 ' \
++            -e 's block/bootdevice/by-name/logfs sda49 ' \
++            -e 's block/bootdevice/by-name/modem sda67 ' \
++            -e 's block/bootdevice/by-name/oem_a sda78 ' \
++            -e 's block/bootdevice/by-name/oem_b sda92 ' \
++            -e 's block/bootdevice/by-name/qupfw sda16 ' \
++            -e 's block/bootdevice/by-name/rtice sda64 ' \
++            -e 's block/bootdevice/by-name/super sda95 ' \
++            -e 's block/bootdevice/by-name/xbl_a sdb1 ' \
++            -e 's block/bootdevice/by-name/xbl_b sdc1 ' \
++            -e 's block/bootdevice/by-name/apdp sdb5 ' \
++            -e 's block/bootdevice/by-name/boot sda72 ' \
++            -e 's block/bootdevice/by-name/diag sda57 ' \
++            -e 's block/bootdevice/by-name/dtbo sda77 ' \
++            -e 's block/bootdevice/by-name/mdtp sda70 ' \
++            -e 's block/bootdevice/by-name/misc sda52 ' \
++            -e 's block/bootdevice/by-name/qmcs sda63 ' \
++            -e 's block/bootdevice/by-name/shrm sda19 ' \
++            -e 's block/bootdevice/by-name/tz_a sda10 ' \
++            -e 's block/bootdevice/by-name/tz_b sda25 ' \
++            -e 's block/bootdevice/by-name/tzsc sda62 ' \
++            -e 's block/bootdevice/by-name/uefi sda21 ' \
++            -e 's block/bootdevice/by-name/abl sda12 ' \
++            -e 's block/bootdevice/by-name/aop sda8 ' \
++            -e 's block/bootdevice/by-name/cdt sda51 ' \
++            -e 's block/bootdevice/by-name/ddr sda47 ' \
++            -e 's block/bootdevice/by-name/dip sda43 ' \
++            -e 's block/bootdevice/by-name/dsp sda71 ' \
++            -e 's block/bootdevice/by-name/frp sda6 ' \
++            -e 's block/bootdevice/by-name/fsc sda38 ' \
++            -e 's block/bootdevice/by-name/fsg sda7 ' \
++            -e 's block/bootdevice/by-name/hyp sda11 ' \
++            -e 's block/bootdevice/by-name/oem sda78 ' \
++            -e 's block/bootdevice/by-name/ssd sda41 ' \
++            -e 's block/bootdevice/by-name/xbl sdb1 ' \
++            -e 's block/bootdevice/by-name/TA sda1 ' \
++            -e 's block/bootdevice/by-name/tz sda10 ' \
++            -e 's block/by-name/metadata sda54 ' \
++            -e 's block/by-name/misc sda52 ' \
++            "$@"
++        ;;
+     "pdx235")
+         sed -i \
+             -e 's block/bootdevice/by-name/LTALabel sda3 ' \

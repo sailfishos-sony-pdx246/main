@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: Johannes Meyer zum Alten Borgloh
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Copyright and licensing for the files that cannot carry a header themselves.
+# Documentation (*.md) is CC-BY-SA-4.0 and scripts are BSD-3-Clause, each with
+# its own SPDX header. The patches keep the licence of the project they change;
+# their context lines belong to that project's owners, the changes to their
+# authors (named in each patch's From: line).
+
+version = 1
+SPDX-PackageName = "Sailfish OS for the Sony Xperia 10 VI (pdx246)"
+SPDX-PackageSupplier = "Johannes Meyer zum Alten Borgloh"
+SPDX-PackageDownloadLocation = "NOASSERTION"
+
+# AOSP projects of the hybris-23.2 tree (Apache-2.0), changed by this port.
+[[annotations]]
+path = ["patches/system/**", "patches/frameworks/**"]
+SPDX-FileCopyrightText = ["The Android Open Source Project", "Johannes Meyer zum Alten Borgloh"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# sailfishos/droidmedia (Jolla, Apache-2.0): Halium's adaptation to LineageOS
+# 23.2 by TheKit (0001) and this port's revert of a codec metadata change (0002).
+[[annotations]]
+path = "patches/external/droidmedia/**"
+SPDX-FileCopyrightText = ["Jolla Ltd.", "TheKit", "Johannes Meyer zum Alten Borgloh"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# mer-hybris/hybris-boot (Jolla; init-script is GPL-2.0-only, fixup-mountpoints
+# carries no notice upstream): the pdx246 mount map and an init-script change.
+[[annotations]]
+path = "patches/hybris/hybris-boot/**"
+SPDX-FileCopyrightText = ["Jolla Ltd.", "Johannes Meyer zum Alten Borgloh"]
+SPDX-License-Identifier = "GPL-2.0-only"

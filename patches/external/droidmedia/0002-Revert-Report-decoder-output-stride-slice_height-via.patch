@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Sat, 10 Oct 2026 10:18:17 +0200
+Subject: [PATCH 2/2] Revert "Report decoder output stride/slice_height via
+ get_output_info"
+
+This reverts commit 81db5a7b2a50083f70f1249d99b9c1a735ff4114.
+
+The commit appends stride/slice_height to DroidMediaCodecMetaData, which
+shifts every field of the decoder and encoder metadata by 8 bytes.
+Sailfish OS 5.1.0.11 ships gstreamer1.0-droid 0.20251025.0 and
+gecko-camera-droid-plugin 0.1.10, built on 2026-05-24 against the old
+layout with an unversioned Requires: droidmedia. With the mismatch,
+decoders lose their codec data (AAC playback fails: C2SoftAacDec
+"Invalid AAC stream") and encoders read the bitrate from the old stride
+field (1920 bit/s video, 0 bit/s AAC). Drop this revert when moving to
+a gst-droid built against the new header (>= 0.20260902.0).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I22339c13e5e219593680bb9e0638193fe93d77c0
+---
+ droidmediacodec.cpp | 5 -----
+ droidmediacodec.h   | 2 --
+ 2 files changed, 7 deletions(-)
+
+diff --git a/droidmediacodec.cpp b/droidmediacodec.cpp
+index 9df6c02..9d75d22 100644
+--- a/droidmediacodec.cpp
++++ b/droidmediacodec.cpp
+@@ -1162,11 +1162,6 @@ void droid_media_codec_get_output_info(DroidMediaCodec *codec,
+   md->findInt32(android::kKeySampleRate, &info->sample_rate);
+   md->findInt32(android::kKeyColorFormat, &info->hal_format);
+ 
+-  info->stride = -1;
+-  info->slice_height = -1;
+-  md->findInt32(android::kKeyStride, &info->stride);
+-  md->findInt32(android::kKeySliceHeight, &info->slice_height);
+-
+   if (!md->findRect(android::kKeyCropRect, &crop->left, &crop->top, &crop->right, &crop->bottom)) {
+     crop->left = crop->top = 0;
+     crop->right = info->width;
+diff --git a/droidmediacodec.h b/droidmediacodec.h
+index e9bb10c..908da77 100644
+--- a/droidmediacodec.h
++++ b/droidmediacodec.h
+@@ -59,8 +59,6 @@ typedef struct {
+   int32_t sample_rate;
+   int32_t hal_format;
+   DroidMediaCodecFlags flags;
+-  int32_t stride;
+-  int32_t slice_height;
+ } DroidMediaCodecMetaData;
+ 
+ typedef struct {

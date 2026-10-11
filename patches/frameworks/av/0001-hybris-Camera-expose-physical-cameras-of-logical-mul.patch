@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Wed, 7 Oct 2026 17:43:22 +0200
+Subject: [PATCH] (hybris) Camera: expose physical cameras of logical
+ multi-cameras to API1
+
+droidmedia, and with it gst-droid and the Sailfish camera app, only uses
+camera API1. filterLogicalCameraIdsLocked keeps one API1 ID per facing out
+of each logical camera and its physical cameras, so on pdx246 (logical
+cameras 3 and 4 over the main camera 0 and the ultra-wide 2) API1 saw only
+cameras 0 and 1 and the ultra-wide was unreachable.
+
+Under persist.camera.api1.expose_physical (default true), keep the
+physical cameras and drop a logical camera whose physical cameras are all
+listed; pdx246 then exposes 0, 1 and 2. The idea comes from sharks-dev's
+"Fix camera1 API" gist (Mister_Magister) for the Xperia 10 IV/10 V ports,
+which skips this filter entirely under the same property; here the
+logical cameras are dropped as well.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I24c911c34a4453638f6e64eda2a577d6327a6109
+---
+ .../common/CameraProviderManager.cpp          | 21 +++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/services/camera/libcameraservice/common/CameraProviderManager.cpp b/services/camera/libcameraservice/common/CameraProviderManager.cpp
+index 7032db04aa..fd2b359f38 100644
+--- a/services/camera/libcameraservice/common/CameraProviderManager.cpp
++++ b/services/camera/libcameraservice/common/CameraProviderManager.cpp
+@@ -3580,6 +3580,27 @@ status_t CameraProviderManager::getCameraCharacteristicsLocked(const std::string
+ void CameraProviderManager::filterLogicalCameraIdsLocked(
+         std::vector<std::string>& deviceIds) const
+ {
++    // (hybris) droidmedia only speaks camera API1. Expose the physical cameras
++    // of a logical multi-camera (pdx246: the ultra-wide, camera 2, behind the
++    // logical cameras 3 and 4) and drop a logical camera whose physical cameras
++    // are all listed. Idea from sharks-dev's "Fix camera1 API" gist
++    // (Mister_Magister) for the Xperia 10 IV/10 V ports, which skips this filter
++    // entirely under the same property.
++    if (property_get_bool("persist.camera.api1.expose_physical", true)) {
++        const std::unordered_set<std::string> listed(deviceIds.begin(), deviceIds.end());
++        deviceIds.erase(std::remove_if(deviceIds.begin(), deviceIds.end(),
++                [this, &listed](const std::string& id) {
++                    auto info = findDeviceInfoLocked(id);
++                    if (info == nullptr || !info->mIsLogicalCamera) return false;
++                    return std::all_of(info->mPhysicalIds.begin(), info->mPhysicalIds.end(),
++                            [&listed](const std::string& p) { return listed.count(p) > 0; });
++                }), deviceIds.end());
++        std::string s;
++        for (auto& id : deviceIds) s += " " + id;
++        ALOGI("%s: API1 camera ids:%s", __FUNCTION__, s.c_str());
++        return;
++    }
++
+     // Map between camera facing and camera IDs related to logical camera.
+     std::map<int, std::unordered_set<std::string>> idCombos;
+ 

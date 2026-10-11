@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Wed, 7 Oct 2026 16:37:35 +0200
+Subject: [PATCH] (hybris) Skip the SELinux context check of decompressed
+ APEXes without SELinux
+
+With SELinux disabled, a decompressed APEX in /data/apex/decompressed has
+no security.selinux xattr. getfilecon() fails with ENODATA, the scope
+guard in ProcessCompressedApex deletes the file, and no compressed APEX
+is ever activated (26 on pdx246, LineageOS 23.2). Without
+com.android.media.swcodec the declared Codec2 software store never
+registers and mediaserver's codec list hangs, and with it every client
+of MediaCodecList (gst-droid, the camera service).
+
+Check the context only when is_selinux_enabled() reports SELinux as
+enabled. The key, version and root-digest checks of
+ValidateDecompressedApex stay.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I2612ce0479d23947bfde3dfea887a2d8354aa642
+---
+ apexd/apexd.cpp | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/apexd/apexd.cpp b/apexd/apexd.cpp
+index 4c86a996..b01743a5 100644
+--- a/apexd/apexd.cpp
++++ b/apexd/apexd.cpp
+@@ -39,6 +39,7 @@
+ #include <libdm/dm_target.h>
+ #include <linux/loop.h>
+ #include <selinux/android.h>
++#include <selinux/selinux.h>
+ #include <stdlib.h>
+ #include <sys/inotify.h>
+ #include <sys/ioctl.h>
+@@ -2463,12 +2464,18 @@ Result<ApexFile> OpenAndValidateDecompressedApex(const ApexFile& capex,
+   if (!result.ok()) {
+     return result.error();
+   }
+-  auto ctx = GetfileconPath(apex_path);
+-  if (!ctx.ok()) {
+-    return ctx.error();
+-  }
+-  if (!StartsWith(*ctx, gConfig->active_apex_selinux_ctx)) {
+-    return Error() << apex_path << " has wrong SELinux context " << *ctx;
++  // (hybris) With SELinux disabled the decompressed file has no
++  // security.selinux xattr: getfilecon() fails with ENODATA, the scope guard
++  // in ProcessCompressedApex deletes the file, and no compressed APEX is ever
++  // activated. Only check the context when SELinux is enabled.
++  if (is_selinux_enabled() > 0) {
++    auto ctx = GetfileconPath(apex_path);
++    if (!ctx.ok()) {
++      return ctx.error();
++    }
++    if (!StartsWith(*ctx, gConfig->active_apex_selinux_ctx)) {
++      return Error() << apex_path << " has wrong SELinux context " << *ctx;
++    }
+   }
+   return std::move(*apex);
+ }

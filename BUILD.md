@@ -120,8 +120,14 @@ repo start hybris-23.2 bionic build/make build/soong frameworks/av frameworks/na
 hybris-patches/apply-patches.sh --mb
 ```
 
-**This port's own patches** **(once published, as patch files in `patches/` of this repository,
-applied with `scripts/apply-patches.sh` after the hybris patches):**
+**This port's own patches** (in `patches/<project path>/`; `scripts/apply-patches.sh` applies
+them after the hybris patches, skips the ones already in the branch, and can be run again):
+
+```sh
+repo start hybris-23.2 external/droidmedia hybris/hybris-boot
+<main>/scripts/apply-patches.sh $ANDROID_ROOT
+```
+
 
 | Project | Change | Upstream status |
 |---|---|---|

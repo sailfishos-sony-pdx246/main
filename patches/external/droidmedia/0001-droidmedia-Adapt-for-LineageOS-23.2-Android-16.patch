@@ -1,0 +1,480 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <thekit@disroot.org>
+Date: Thu, 9 Jul 2026 00:52:42 +0300
+Subject: [PATCH 1/2] [droidmedia] Adapt for LineageOS 23.2 (Android 16)
+
+[pdx246: applied onto sailfishos/droidmedia master f045c16. That base already has
+FakeCameraServiceProxy (9a4cbd6), which this commit also adds; the duplicate,
+byte-identical definition from this commit was dropped.]
+
+Change-Id: I40183729dfe9a7ae3a85a9a3295d9d82b13e0651
+(cherry picked from commit 3a9d2f8c4b2e7e10c5208f505b895cb42a6b98dc)
+---
+ Android.mk                                |  41 ++++++-
+ droidmediacamera.cpp                      |  27 ++++-
+ minimedia.cpp                             |   2 +-
+ services/audiopolicy/audiopolicy_16_0_0.h |  63 ++++++++--
+ services/services_16_0_0.h                | 135 ++++++++--------------
+ 5 files changed, 163 insertions(+), 105 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 8444e3d..d00b5c4 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -118,7 +118,12 @@ LOCAL_SHARED_LIBRARIES += libactivitymanager_aidl \
+ endif
+ 
+ ifeq ($(shell test $(ANDROID_MAJOR) -ge 15 && echo true),true)
+-LOCAL_SHARED_LIBRARIES += framework-permission-aidl-cpp
++LOCAL_SHARED_LIBRARIES += framework-permission-aidl-cpp \
++			  process_info_service_aidl-cpp
++endif
++
++ifeq ($(shell test $(ANDROID_MAJOR) -ge 16 && echo true),true)
++LOCAL_SHARED_LIBRARIES += libcameracompatbilityinfo
+ endif
+ 
+ LOCAL_CPPFLAGS=-DANDROID_MAJOR=$(ANDROID_MAJOR) -DANDROID_MINOR=$(ANDROID_MINOR) -DANDROID_MICRO=$(ANDROID_MICRO) $(FORCE_HAL_PARAM) $(LEGACY_ANDROID_REVISION_PARAM) -Wno-unused-parameter
+@@ -353,7 +358,9 @@ LOCAL_SHARED_LIBRARIES += libvendorsupport \
+ endif
+ 
+ ifeq ($(shell test $(ANDROID_MAJOR) -ge 16 && echo true),true)
+-LOCAL_SHARED_LIBRARIES += libtinyxml2
++LOCAL_SHARED_LIBRARIES += libtinyxml2 \
++                          process_info_service_aidl-cpp \
++                          libcameracompatbilityinfo
+ endif
+ 
+ LOCAL_MODULE_TAGS := optional
+@@ -428,6 +435,21 @@ LOCAL_SHARED_LIBRARIES += android.frameworks.stats-V2-ndk \
+                           android.frameworks.sensorservice-V1-ndk
+ endif
+ 
++ifeq ($(shell test $(ANDROID_MAJOR) -ge 15 && echo true),true)
++LOCAL_STATIC_LIBRARIES += libvirtualdevicebuildflags
++
++LOCAL_SHARED_LIBRARIES += libvendorsupport \
++                          android.companion.virtualdevice.flags-aconfig-cc \
++                          android.hardware.common-V2-cpp \
++                          android.hardware.common.fmq-V1-cpp
++endif
++
++ifeq ($(shell test $(ANDROID_MAJOR) -ge 16 && echo true),true)
++LOCAL_SHARED_LIBRARIES += libtinyxml2 \
++                          process_info_service_aidl-cpp \
++                          libcameracompatbilityinfo
++endif
++
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_CPPFLAGS := -DANDROID_MAJOR=$(ANDROID_MAJOR) -DANDROID_MINOR=$(ANDROID_MINOR) -DANDROID_MICRO=$(ANDROID_MICRO) $(LEGACY_ANDROID_REVISION_PARAM) -Wno-unused-parameter
+ ifneq ($(CM_BUILD),)
+@@ -522,5 +544,20 @@ LOCAL_SHARED_LIBRARIES += android.frameworks.stats-V2-ndk \
+                           android.frameworks.sensorservice-V1-ndk
+ endif
+ 
++ifeq ($(shell test $(ANDROID_MAJOR) -ge 15 && echo true),true)
++LOCAL_STATIC_LIBRARIES += libvirtualdevicebuildflags
++
++LOCAL_SHARED_LIBRARIES += libvendorsupport \
++                          android.companion.virtualdevice.flags-aconfig-cc \
++                          android.hardware.common-V2-cpp \
++                          android.hardware.common.fmq-V1-cpp
++endif
++
++ifeq ($(shell test $(ANDROID_MAJOR) -ge 16 && echo true),true)
++LOCAL_SHARED_LIBRARIES += libtinyxml2 \
++                          process_info_service_aidl-cpp \
++                          libcameracompatbilityinfo
++endif
++
+ LOCAL_MODULE := libminisf
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/droidmediacamera.cpp b/droidmediacamera.cpp
+index dc8096d..7c6557e 100644
+--- a/droidmediacamera.cpp
++++ b/droidmediacamera.cpp
+@@ -46,7 +46,10 @@
+ #include "droidmediabuffer.h"
+ #include "private.h"
+ 
+-#if ANDROID_MAJOR >= 15
++#if ANDROID_MAJOR >= 16
++#include <android/content/res/CameraCompatibilityInfo.h>
++#include <android/content/AttributionSourceState.h>
++#elif ANDROID_MAJOR >= 15
+ #include <android/content/AttributionSourceState.h>
+ #endif
+ 
+@@ -335,7 +338,11 @@ bool droid_media_camera_get_info(DroidMediaCameraInfo *info, int camera_number)
+ #endif
+ 
+     if (android::Camera::getCameraInfo(camera_number,
+-#if ANDROID_MAJOR >= 13 && (!defined(LEGACY_ANDROID_13_REVISION) || LEGACY_ANDROID_13_REVISION >= 32)
++#if ANDROID_MAJOR >= 16
++                                       android::content::res::CameraCompatibilityInfo{},
++#elif ANDROID_MAJOR >= 15
++                                       false/*overrideToPortrait*/,
++#elif ANDROID_MAJOR >= 13 && (!defined(LEGACY_ANDROID_13_REVISION) || LEGACY_ANDROID_13_REVISION >= 32)
+                                        false/*overrideToPortrait*/,
+ #endif
+ #if ANDROID_MAJOR >= 15
+@@ -507,7 +514,21 @@ DroidMediaCamera *droid_media_camera_connect(int camera_number)
+     android::OK != android::Camera::connectLegacy(camera_number, FORCE_HAL << 8, android::String16("droidmedia"),
+ 					     android::Camera::USE_CALLING_UID, cam->m_camera);
+ #else // Default connect
+-#if (ANDROID_MAJOR >= 15)
++#if (ANDROID_MAJOR >= 16)
++    android::content::AttributionSourceState clientAttribution;
++    clientAttribution.uid = android::hardware::ICameraService::USE_CALLING_UID;
++    clientAttribution.pid = android::hardware::ICameraService::USE_CALLING_PID;
++    clientAttribution.deviceId = android::kDefaultDeviceId;
++    clientAttribution.packageName = "droidmedia";
++
++    cam->m_camera = android::Camera::connect(camera_number
++					     , __ANDROID_API_FUTURE__
++					     , android::content::res::CameraCompatibilityInfo{}
++					     , false
++					     , clientAttribution
++					     , 0
++					     );
++#elif (ANDROID_MAJOR >= 15)
+     android::content::AttributionSourceState clientAttribution;
+     clientAttribution.uid = android::hardware::ICameraService::USE_CALLING_UID;
+     clientAttribution.pid = android::hardware::ICameraService::USE_CALLING_PID;
+diff --git a/minimedia.cpp b/minimedia.cpp
+index e3f7b16..370b3ac 100644
+--- a/minimedia.cpp
++++ b/minimedia.cpp
+@@ -114,7 +114,7 @@ main(int, char**)
+     // Camera service needs to be told which users may use the camera
+     sp<IBinder> binder;
+     do {
+-        binder = sm->getService(String16("media.camera"));
++        binder = sm->waitForService(String16("media.camera"));
+         if (binder != NULL) {
+             break;
+         }
+diff --git a/services/audiopolicy/audiopolicy_16_0_0.h b/services/audiopolicy/audiopolicy_16_0_0.h
+index 3b65ac7..e6119e7 100644
+--- a/services/audiopolicy/audiopolicy_16_0_0.h
++++ b/services/audiopolicy/audiopolicy_16_0_0.h
+@@ -103,7 +103,7 @@ public:
+                                       media::GetOutputForAttrResponse *output) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status startOutput(int32_t portId) override {
++    ::binder::Status startOutput(int32_t portId, media::StartOutputResponse* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status stopOutput(int32_t portId) override {
+@@ -112,6 +112,9 @@ public:
+     ::binder::Status releaseOutput(int32_t portId) override {
+         return ::binder::Status::ok();
+     }
++    ::binder::Status forceReleaseDirectOutput(int32_t output) override {
++        return ::binder::Status::ok();
++    }
+     ::binder::Status getInputForAttr(const media::audio::common::AudioAttributes &,
+                                      int32_t ,
+                                      int32_t,
+@@ -174,6 +177,34 @@ public:
+         return ::binder::Status::ok();
+     }
+ 
++    ::binder::Status setVolumeIndexForGroup(int32_t groupId,
++                                            const media::audio::common::AudioDeviceDescription &device,
++                                            int32_t index, bool muted) override {
++        return ::binder::Status::ok();
++    }
++    ::binder::Status getVolumeIndexForGroup(int32_t groupId,
++                                            const media::audio::common::AudioDeviceDescription &device,
++                                            int32_t *_aidl_return) override {
++        *_aidl_return = 0;
++        return ::binder::Status::ok();
++    }
++    ::binder::Status getMaxVolumeIndexForGroup(int32_t groupId,
++                                               int32_t *_aidl_return) override {
++        *_aidl_return = 0;
++        return ::binder::Status::ok();
++    }
++    ::binder::Status getMinVolumeIndexForGroup(int32_t groupId,
++                                               int32_t *_aidl_return) override {
++        *_aidl_return = 0;
++        return ::binder::Status::ok();
++    }
++    ::binder::Status setMaxVolumeIndexForGroup(int32_t groupId, int32_t maxIndex) override {
++        return ::binder::Status::ok();
++    }
++    ::binder::Status setMinVolumeIndexForGroup(int32_t groupId, int32_t minIndex) override {
++        return ::binder::Status::ok();
++    }
++
+     ::binder::Status getStrategyForStream(media::audio::common::AudioStreamType stream,
+                                           int32_t *strategy) override {
+         *strategy = PRODUCT_STRATEGY_NONE;
+@@ -278,7 +309,7 @@ public:
+     }
+ 
+     ::binder::Status listDeclaredDevicePorts(media::AudioPortRole role,
+-                                             std::vector<media::AudioPortFw>* _aidl_return) {
++                                             std::vector<media::AudioPortFw>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status getAudioPort(int portId,
+@@ -328,7 +359,7 @@ public:
+         return ::binder::Status::ok();
+     }
+ #endif
+-    ::binder::Status updatePolicyMixes(const std::vector<media::AudioMixUpdate>& updates) {
++    ::binder::Status updatePolicyMixes(const std::vector<media::AudioMixUpdate>& updates) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status setUidDeviceAffinities(int32_t uid,
+@@ -426,6 +457,14 @@ public:
+     ::binder::Status isCallScreenModeSupported(bool* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
++    ::binder::Status getAttributesForStreamType(media::audio::common::AudioStreamType stream,
++                                                media::audio::common::AudioAttributes *_aidl_return) override {
++        return ::binder::Status::ok();
++    }
++    ::binder::Status getStreamTypeForAttributes(const media::audio::common::AudioAttributes &attributes,
++                                                media::audio::common::AudioStreamType *_aidl_return) override {
++        return ::binder::Status::ok();
++    }
+     ::binder::Status setDevicesRoleForStrategy(int32_t strategy,
+                                                media::DeviceRole role,
+                                                const std::vector<media::audio::common::AudioDevice>& devices) override {
+@@ -436,7 +475,7 @@ public:
+                                                   const ::std::vector<media::audio::common::AudioDevice>& devices) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status clearDevicesRoleForStrategy(int32_t strategy, media::DeviceRole role) {
++    ::binder::Status clearDevicesRoleForStrategy(int32_t strategy, media::DeviceRole role) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status getDevicesForRoleAndStrategy(int32_t strategy,
+@@ -491,31 +530,31 @@ public:
+                                                     std::vector<media::audio::common::AudioProfile>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status getSupportedMixerAttributes(int32_t portId, ::std::vector<media::AudioMixerAttributesInternal>* _aidl_return) {
++    ::binder::Status getSupportedMixerAttributes(int32_t portId, ::std::vector<media::AudioMixerAttributesInternal>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status setPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, int32_t uid, const media::AudioMixerAttributesInternal& mixerAttr) {
++    ::binder::Status setPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, int32_t uid, const media::AudioMixerAttributesInternal& mixerAttr) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status getPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, ::std::optional<media::AudioMixerAttributesInternal>* _aidl_return) {
++    ::binder::Status getPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, ::std::optional<media::AudioMixerAttributesInternal>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status clearPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, int32_t uid) {
++    ::binder::Status clearPreferredMixerAttributes(const media::audio::common::AudioAttributes& attr, int32_t portId, int32_t uid) override {
+         return ::binder::Status::ok();
+     }
+-    ::binder::Status getPermissionController(::android::sp<::com::android::media::permission::INativePermissionController>* _aidl_return) {
++    ::binder::Status getPermissionController(::android::sp<::com::android::media::permission::INativePermissionController>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status getMmapPolicyInfos(::android::media::audio::common::AudioMMapPolicyType policyType,
+-                                        ::std::vector<::android::media::audio::common::AudioMMapPolicyInfo>* _aidl_return) {
++                                        ::std::vector<::android::media::audio::common::AudioMMapPolicyInfo>* _aidl_return) override {
+         return ::binder::Status::ok();
+     }
+     ::binder::Status getMmapPolicyForDevice(::android::media::audio::common::AudioMMapPolicyType policyType,
+-                                     ::android::media::audio::common::AudioMMapPolicyInfo* policyInfo) {
++                                     ::android::media::audio::common::AudioMMapPolicyInfo* policyInfo) override {
+         return ::binder::Status::ok();
+     }
+ 
+-    ::binder::Status setEnableHardening(bool) {
++    ::binder::Status setEnableHardening(bool) override {
+         return ::binder::Status::ok();
+     }
+ 
+diff --git a/services/services_16_0_0.h b/services/services_16_0_0.h
+index eb8cf7a..87ac84b 100644
+--- a/services/services_16_0_0.h
++++ b/services/services_16_0_0.h
+@@ -223,7 +223,7 @@ public:
+         return BAD_VALUE;
+     }
+ */
+-    status_t setTransactionState(TransactionState&&) {
++    status_t setTransactionState(TransactionState&&, const sp<IBinder>&) {
+         return BAD_VALUE;
+     }
+ 
+@@ -477,102 +477,25 @@ public:
+     }
+ };
+ 
+-#include <processinfo/IProcessInfoService.h>
+-
+-class BnProcessInfoService : public BnInterface<IProcessInfoService> {
+-public:
+-    virtual status_t    onTransact( uint32_t code,
+-                                    const Parcel& data,
+-                                    Parcel* reply,
+-                                    uint32_t flags = 0);
+-};
+-
+-status_t BnProcessInfoService::onTransact( uint32_t code, const Parcel& data, Parcel* reply,
+-        uint32_t flags) {
+-    switch(code) {
+-        case GET_PROCESS_STATES_FROM_PIDS: {
+-            CHECK_INTERFACE(IProcessInfoService, data, reply);
+-            int32_t arrayLen = data.readInt32();
+-            if (arrayLen <= 0) {
+-                reply->writeNoException();
+-                reply->writeInt32(0);
+-                reply->writeInt32(NOT_ENOUGH_DATA);
+-                return NO_ERROR;
+-            }
+-
+-            size_t len = static_cast<size_t>(arrayLen);
+-            int32_t pids[len];
+-            status_t res = data.read(pids, len * sizeof(*pids));
+-
+-            // Ignore output array length returned in the parcel here, as the states array must
+-            // always be the same length as the input PIDs array.
+-            int32_t states[len];
+-            for (size_t i = 0; i < len; i++) states[i] = -1;
+-            if (res == NO_ERROR) {
+-                res = getProcessStatesFromPids(len, /*in*/ pids, /*out*/ states);
+-            }
+-            reply->writeNoException();
+-            reply->writeInt32Array(len, states);
+-            reply->writeInt32(res);
+-            return NO_ERROR;
+-        } break;
+-        case GET_PROCESS_STATES_AND_OOM_SCORES_FROM_PIDS: {
+-            CHECK_INTERFACE(IProcessInfoService, data, reply);
+-            int32_t arrayLen = data.readInt32();
+-            if (arrayLen <= 0) {
+-                reply->writeNoException();
+-                reply->writeInt32(0);
+-                reply->writeInt32(NOT_ENOUGH_DATA);
+-                return NO_ERROR;
+-            }
+-
+-            size_t len = static_cast<size_t>(arrayLen);
+-            int32_t pids[len];
+-            status_t res = data.read(pids, len * sizeof(*pids));
+-
+-            // Ignore output array length returned in the parcel here, as the
+-            // states array must always be the same length as the input PIDs array.
+-            int32_t states[len];
+-            int32_t scores[len];
+-            for (size_t i = 0; i < len; i++) {
+-                states[i] = -1;
+-                scores[i] = -10000;
+-            }
+-            if (res == NO_ERROR) {
+-                res = getProcessStatesAndOomScoresFromPids(
+-                        len, /*in*/ pids, /*out*/ states, /*out*/ scores);
+-            }
+-            reply->writeNoException();
+-            reply->writeInt32Array(len, states);
+-            reply->writeInt32Array(len, scores);
+-            reply->writeInt32(res);
+-            return NO_ERROR;
+-        } break;
+-        default:
+-            return BBinder::onTransact(code, data, reply, flags);
+-    }
+-}
++#include <android/os/BnProcessInfoService.h>
+ 
+ class FakeProcessInfoService : public BinderService<FakeProcessInfoService>,
+-                        public BnProcessInfoService
++                        public android::os::BnProcessInfoService
+ {
+ public:
+     static char const *getServiceName() {
+         return "processinfo";
+     }
+ 
+-    status_t getProcessStatesFromPids(size_t length, int32_t* pids, int32_t* states) {
+-        for (unsigned int i=0; i< length; i++)
+-            states[i] = 0;
+-        return 0;
++    binder::Status getProcessStatesFromPids(const std::vector<int32_t>& pids, std::vector<int32_t>* states) override {
++        states->resize(pids.size(), 0);
++        return binder::Status::ok();
+     }
+ 
+-    status_t getProcessStatesAndOomScoresFromPids( size_t length, int32_t* pids, int32_t* states, int32_t* scores) {
+-        for (unsigned int i=0; i< length; i++) {
+-            states[i] = 0;
+-            scores[i] = 0;
+-        }
+-        return 0;
++    binder::Status getProcessStatesAndOomScoresFromPids(const std::vector<int32_t>& pids, std::vector<int32_t>* states, std::vector<int32_t>* scores) override {
++        states->resize(pids.size(), 0);
++        scores->resize(pids.size(), 0);
++        return binder::Status::ok();
+     }
+ };
+ 
+@@ -702,6 +625,11 @@ public:
+ };
+ 
+ #include <binder/IActivityManager.h>
++// Forward-declare AIDL types used by stub methods
++namespace android { namespace app {
++    class IProcessObserver;
++    class RunningAppProcessInfo;
++}}
+ 
+ class BnFakeActivityManager : public BnInterface<IActivityManager>
+ {
+@@ -782,6 +710,18 @@ public:
+                                            int32_t appPid) {
+         return BAD_VALUE;
+     };
++
++    virtual status_t registerProcessObserver(const sp<app::IProcessObserver>& observer) {
++        return BAD_VALUE;
++    };
++
++    virtual status_t unregisterProcessObserver(const sp<app::IProcessObserver>& observer) {
++        return BAD_VALUE;
++    };
++
++    virtual status_t getRunningAppProcesses(::std::vector<app::RunningAppProcessInfo>* output) {
++        return BAD_VALUE;
++    };
+ };
+ 
+ #include <android/hardware/BnSensorPrivacyManager.h>
+@@ -1078,6 +1018,27 @@ public:
+     binder::Status getStagedApexInfos(::std::vector<content::pm::StagedApexInfo>* _aidl_return) override {
+         return binder::Status::ok();
+     }
++
++    binder::Status getPackageInfoWithSigningInfo(const String16& /*packageName*/,
++                                                 int32_t /*userId*/,
++                                                 ::std::optional<content::pm::PackageInfoNative>* _aidl_return) override {
++        *_aidl_return = std::nullopt;
++        return binder::Status::ok();
++    }
++
++    binder::Status getPackageInfoWithSigningInfoForUid(int32_t /*uid*/,
++                                                       ::std::optional<::std::vector<::std::optional<content::pm::PackageInfoNative>>>* _aidl_return) override {
++        *_aidl_return = std::nullopt;
++        return binder::Status::ok();
++    }
++
++    binder::Status checkPermission(const String16& /*permName*/,
++                                   const String16& /*packageName*/,
++                                   int32_t /*userId*/,
++                                   int32_t* _aidl_return) override {
++        *_aidl_return = 0;
++        return binder::Status::ok();
++    }
+ };
+ 
+ #include <android/hardware/BnCameraServiceProxy.h>

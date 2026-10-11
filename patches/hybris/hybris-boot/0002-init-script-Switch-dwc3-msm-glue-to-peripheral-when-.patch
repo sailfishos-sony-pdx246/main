@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Sun, 4 Oct 2026 16:00:46 +0200
+Subject: [PATCH 2/2] [init-script] Switch dwc3-msm glue to peripheral when the
+ UDC is missing
+
+On some Qualcomm dwc3-msm devices the UDC named by
+androidboot.usbcontroller (here a600000.dwc3) is only registered after
+the glue device a600000.ssusb is switched to peripheral mode. The
+existing write goes through /sys/class/udc/<udc>/device/.., which does
+not exist yet, so the gadget never binds and there is no telnet.
+
+If the UDC is missing, write "peripheral" to
+/sys/bus/platform/devices/<address>.ssusb/mode and wait up to 5 s for
+the UDC. Sony pdx246's own recovery does the same
+(init.recovery.qcom.rc). Devices whose UDC already exists are unaffected.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I54c6a32f6692abecc7502a88f6f8b1ed56e8e755
+---
+ init-script | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/init-script b/init-script
+index e451bae..5046e23 100755
+--- a/init-script
++++ b/init-script
+@@ -248,6 +248,17 @@ usb_setup_configfs() {
+             esac
+         done
+     fi
++    # Some Qualcomm dwc3-msm devices (e.g. Sony pdx246) only register their UDC
++    # once the glue device (<address>.ssusb) is switched to peripheral mode.
++    if [ -n "$udc" ] && [ ! -e /sys/class/udc/"$udc" ]; then
++        glue=/sys/bus/platform/devices/"${udc%%.*}".ssusb/mode
++        [ -e "$glue" ] && write "$glue" peripheral
++        i=0
++        while [ ! -e /sys/class/udc/"$udc" ] && [ $i -lt 50 ]; do
++            usleep 100000
++            i=$((i + 1))
++        done
++    fi
+     write /sys/class/udc/"$udc"/device/../mode peripheral
+     echo "$udc" > $GADGET_DIR/g1/UDC
+ }
