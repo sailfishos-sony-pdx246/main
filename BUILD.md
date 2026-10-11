@@ -56,7 +56,8 @@ Download the Sailfish OS 5.1.0.11 SDK parts (check the published checksums):
 - `https://releases.sailfishos.org/ubu/ubuntu-focal-20210531-android-rootfs.tar.bz2` (only if you
   build the Android half in Jolla's Ubuntu chroot; see section 4)
 
-`scripts/install-sdks.sh` **(to be generalised from the port's own script)** does the rest:
+`scripts/install-sdks.sh <download dir> <android tree>` does the rest (generalised from the port's
+own install script; not yet run in this form):
 
 1. Unpack the Platform SDK to `/srv/sailfishos/sdks/sfossdk` (`sudo tar --numeric-owner -p -xjf`).
 2. Inside it (`/srv/sailfishos/sdks/sfossdk/sdk-chroot`): `sudo zypper ref` (an error for
