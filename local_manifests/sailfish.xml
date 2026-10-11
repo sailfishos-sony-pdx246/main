@@ -6,12 +6,10 @@
      scripts expect, the middleware with this port's fixes, and the default middleware pinned
      to the commits the port is built and tested with. build_packages.sh -o builds what is
      checked out here and only clones what is missing.
-     DRAFT: NAMESPACE stands for the GitHub organisation or account of the port (not decided);
-     none of these repos is pushed yet. Before publishing: push libhybris' source fork with
-     92ccb48 and point the packaging repo's .gitmodules at it, and push droid-bthelper's tag
-     0.3.0 (build_packages.sh -o derives the version from it). -->
+     libhybris' submodule (the source) comes from github.com/sailfishos-sony-pdx246/libhybris-source;
+     droid-bthelper needs its tag 0.3.0 (build_packages.sh -o derives the version from it). -->
 <manifest>
-  <remote name="pdx246" fetch="https://github.com/NAMESPACE" />
+  <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
   <!-- Adaptation -->
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
@@ -25,7 +23,7 @@
 
   <!-- Middleware with this port's fixes -->
   <project path="hybris/mw/libhybris" name="libhybris" remote="pdx246"
-           revision="b135d159961b5d6ef72b1db126cd80f41a930d8c" upstream="pdx246-0.0.5.58" sync-s="true" />
+           revision="a2ae3fce4d43dc3acafa04573f415c9090115f0d" upstream="pdx246-0.0.5.58" sync-s="true" />
   <project path="hybris/mw/ofono-binder-plugin-ext-qti" name="ofono-binder-plugin-ext-qti" remote="pdx246"
            revision="e912b7c759ae86693e098da6e477a878244484a8" upstream="pdx246-0.1.1-aidl" />
   <project path="hybris/mw/geoclue-providers-hybris" name="geoclue-providers-hybris" remote="pdx246"

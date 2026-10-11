@@ -6,9 +6,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 # Building Sailfish OS for the Sony Xperia 10 VI (pdx246)
 
 > **Draft (2026-10-11).** This describes the build as it is done today. It has not yet been
-> proven by a build from scratch on a clean machine, and the public repository locations are
-> not decided yet: `<namespace>` stands for the GitHub organisation or account that will hold
-> the port's repositories. Steps that depend on that are marked **(once published)**.
+> proven by a build from scratch on a clean machine. The port's repositories are at
+> https://github.com/sailfishos-sony-pdx246.
 
 The port runs Sailfish OS 5.1.0.11 on top of the LineageOS 23.2 (Android 16 QPR2) port for the
 Xperia 10 VI (XQ-ES54, XQ-ES72; one build for both). It uses libhybris: the Android vendor
@@ -102,10 +101,10 @@ repo sync -c -j8 --no-clone-bundle --retry-fetches=2 --force-sync
 
 | File | What |
 |---|---|
-| `pdx246.xml` | device tree, kernel, kernel modules, kernel device trees (github.com/johanneszab) and `hardware/sony` (LineageOS), pinned by SHA; the device tree and kernel at their `hybris-23.2` branches **(once pushed)** |
+| `pdx246.xml` | device tree and kernel (the port's forks, at their `hybris-23.2` branches), kernel modules and kernel device trees (the LineageOS port's repos) and `hardware/sony` (LineageOS), pinned by SHA |
 | `halium.xml` | `vendor/halium/hardware` (the audio compatibility layer `audio.hidl_compat`), Halium `halium-16.0` at 0cc91ec |
 | `droidmedia.xml` | `sailfishos/droidmedia` at `master` (the hybris-23.2 manifest pins branch `android15`, which was merged and deleted upstream) |
-| `sailfish.xml` | the adaptation repositories and the middleware of section 5 at their paths in the tree, all pinned; this port's own repositories under `NAMESPACE` **(once published)** |
+| `sailfish.xml` | the adaptation repositories and the middleware of section 5 at their paths in the tree, all pinned |
 
 **Vendor blobs:** extract them as for LineageOS, with the device tree's `extract-files.py`
 (from the stock firmware or a phone running the pinned LineageOS release). The port does not
@@ -140,8 +139,7 @@ repo start hybris-23.2 external/droidmedia hybris/hybris-boot
 
 **libhybris:** `make hybris-hal` builds libhybris' compatibility layers from
 `hybris/mw/libhybris`, which no manifest provides. The port uses its own branch (a fix for
-getprop/setprop aborting at exit): `sailfish.xml` checks it out there **(once published)**;
-until then clone `https://github.com/mer-hybris/libhybris.git` there with `--recurse-submodules`.
+getprop/setprop aborting at exit), which `sailfish.xml` checks out there with its submodule.
 
 ## 4. Build the Android half
 
@@ -164,13 +162,13 @@ host with a warm ccache.
 ## 5. Build the packages and the image
 
 Middleware with this port's fixes lives in `hybris/mw/`, at these branches (checked out by
-`sailfish.xml` **once published**). `build_packages.sh` clones any missing
+`sailfish.xml`). `build_packages.sh` clones any missing
 middleware at its upstream branch head, but with `-o` it builds an existing checkout as is,
 so these must be in place first:
 
 | Path | Upstream | Branch (commit) | Why |
 |---|---|---|---|
-| `hybris/mw/libhybris` | mer-hybris/libhybris | pdx246-0.0.5.58 (b135d15; submodule 92ccb48) | getprop/setprop exit abort |
+| `hybris/mw/libhybris` | mer-hybris/libhybris | pdx246-0.0.5.58 (a2ae3fc; submodule 92ccb48 from libhybris-source) | getprop/setprop exit abort |
 | `hybris/mw/ofono-binder-plugin-ext-qti` | rinigus/ofono-binder-plugin-ext-qti (AIDL) | pdx246-0.1.1-aidl (e912b7c) | VoLTE ringback, conference, request fixes |
 | `hybris/mw/geoclue-providers-hybris` | mer-hybris/geoclue-providers-hybris | pdx246-0.3.1 (6ba81f2) | GNSS on AIDL V1 vendors |
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
