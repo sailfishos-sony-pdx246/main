@@ -15,7 +15,7 @@
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
            revision="2fd48e465725a6b472e27427c0223c4ee1621c61" upstream="main" sync-s="true" />
   <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
-           revision="629e723c38ed49c2f8026fe9957b014b15583326" upstream="main" sync-s="true" />
+           revision="e89e0989d38ddab944848c49db3879f9245d4da2" upstream="main" sync-s="true" />
   <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
            revision="b2140863209a03ea4b0ae3d0337ff713a788e16d" upstream="main" sync-s="true" />
   <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
