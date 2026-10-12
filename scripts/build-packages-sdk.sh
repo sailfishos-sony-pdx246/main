@@ -50,7 +50,13 @@ for step in "$@"; do
 			run pa git clone --recurse-submodules https://github.com/mer-hybris/pulseaudio-modules-droid.git hybris/mw/pulseaudio-modules-droid
 		fi
 		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout 65edd31f62f22e2eec1f765608ca9c6ae5c4af7b ;;
-	mw) run mw $BP -o --mw ;;               # default middleware set, offline (keeps the pin)
+	# The default middleware set (what a bare `build_packages.sh --mw` builds for Android 11 and
+	# later), one package at a time: with a bare --mw, build_packages.sh asks before each package
+	# ([Y/n/all]), and an unattended run stalls there (behind sudo's pty the read stops it).
+	mw) for p in libhybris pulseaudio-modules-droid pulseaudio-modules-droid-hidl \
+	        mce-plugin-libhybris qt5-qpa-hwcomposer-plugin; do
+	        run mw-$p $BP -o --mw=$p
+	    done ;;
 	dynparts) run dynparts $BP -o --mw=https://github.com/sailfish-on-nabu/parse-android-dynparts ;;
 	sensorfw) run sensorfw $BP -o --mw=https://github.com/sailfishos/sensorfw --spec=rpm/sensorfw-qt5-binder.spec ;;
 	# geoclue-providers-hybris: the port's branch in hybris/mw, pdx246-0.3.1 (0.3.1 plus the
