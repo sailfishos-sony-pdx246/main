@@ -36,6 +36,17 @@ run() {
 	[ "$rc" -eq 0 ] || { echo "Stopped at step $step; see $log"; exit "$rc"; }
 }
 
+# A fresh target cannot install droid-hal-version's build dependencies: mb2 asks zypper for them
+# by capability, our droid-config obsoletes Jolla's usb-moded-defaults, and zypper's
+# non-interactive mode cancels that vendor change ("Solution 1: install droid-config-pdx246 from
+# vendor sony"), so nothing of the transaction is installed (clean build, 2026-10-12). Installing
+# droid-config-$DEVICE by name first accepts it, as step c does for the bluez5 config; a target
+# that has droid-config from earlier builds never meets the question.
+config_in() {
+	sdk-assistant -y maintain "$VENDOR-$DEVICE-$PORT_ARCH" zypper -n \
+		--plus-repo "$ANDROID_ROOT/droid-local-repo/$DEVICE" in "droid-config-$DEVICE"
+}
+
 case " $* " in *" d "*) case " $* " in *" imgboot "*) ;; *) echo "Note: step d without imgboot; the image step will fail on the img-boot version pin." ;; esac ;; esac
 
 for step in "$@"; do
@@ -81,7 +92,8 @@ for step in "$@"; do
 	libhybris) run libhybris $BP -o --mw=libhybris --spec=rpm/libhybris.spec ;;
 	g) run g $BP -g ;;                      # droidmedia, gst-droid
 	imgboot) run imgboot $BP -o -N --mw=droid-hal-img-boot-pdx246 ;;
-	v) run v $BP -v ;;                      # droid-hal-version-pdx246
+	v) run v-config config_in
+	   run v $BP -v ;;                      # droid-hal-version-pdx246
 	i) run i $BP -i ;;                      # the image (mic, LVM)
 	*) echo "unknown step $step"; exit 2 ;;
 	esac
