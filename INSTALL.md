@@ -5,9 +5,9 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Installing Sailfish OS on the Sony Xperia 10 VI (pdx246)
 
-No image is released yet; these steps are for an image you built yourself ([BUILD.md](BUILD.md))
-and will apply to released images as well. The image zip contains the same instructions in
-`flashing-README.txt`.
+Download the image zip and its `SHA256SUMS` from the
+[releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest), or build it yourself
+([BUILD.md](BUILD.md)). The image zip contains the same instructions in `flashing-README.txt`.
 
 **Flashing erases the userdata partition** (all Android data, apps and files) and replaces the
 boot chain of slot a. This is an unofficial community port, not affiliated with Jolla or Sony.

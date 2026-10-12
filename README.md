@@ -8,21 +8,22 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.1.0.11 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** in development; no image is released yet. To try it, build it yourself
-([BUILD.md](BUILD.md)) and flash it ([INSTALL.md](INSTALL.md)).
+**Status:** first release (2026-10-12). Download the image from the
+[releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
+[INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)).
 
 ## What works
 
-Tested on the developer's phone:
+Tested on the developer's phone (XQ-ES54):
 
-- Calls over VoLTE (ringback tone, DTMF, hold, swap, merging into a conference), SMS, mobile
-  data on LTE
+- Calls over VoLTE (ringback tone, DTMF, mic mute, hold, swap, merging into a conference), SMS
+  (with delivery reports), USSD, mobile data on LTE
 - Wi-Fi, Wi-Fi hotspot (2.4 GHz), Bluetooth (audio and headset calls)
 - Audio: speaker, earpiece, wired headphones
-- Cameras: back (including the ultrawide) and front, photos and videos with sound; video and
-  music playback
+- Cameras: back (including the ultrawide) and front, photos and videos with sound; video
+  playback in Gallery and the browser
 - GNSS, NFC (tag and card detection), fingerprint unlock
-- USB: MTP, developer mode, charging with the charging limit from Settings
+- USB: MTP, developer mode, charging only, charging with the charging limit from Settings
 - Standby (about 10 mA overnight)
 
 ## Known issues
@@ -31,8 +32,9 @@ Tested on the developer's phone:
   call" ends the whole conference. This comes from Sailfish OS's call handling, not from the
   port.
 - The hotspot runs on 2.4 GHz only.
-- Not tested yet: mic mute, USSD, SMS delivery reports, reading NFC NDEF tags, NFC card
-  emulation.
+- No update channel yet: a new version means flashing again, which erases the userdata
+  partition.
+- Not tested yet: reading NFC NDEF tags, NFC card emulation.
 
 ## Repositories
 
