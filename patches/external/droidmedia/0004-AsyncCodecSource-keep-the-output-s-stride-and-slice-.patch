@@ -1,0 +1,64 @@
+From 6a8182fb47b38dbb6072c4911a37de894fd6d979 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Mon, 12 Oct 2026 20:39:54 +0200
+Subject: [PATCH 4/4] AsyncCodecSource: keep the output's stride and slice
+ height
+
+convertMessageToMetaData() drops the "stride" and "slice-height" keys of a raw (byte buffer) output format on Android 16, so droid_media_codec_get_output_info() never saw them: the previous commit's layout check stayed silent and the browser still got OMX_COLOR_FormatYUV420SemiPlanar (and upstream's 81db5a7 would have reported -1 here). Copy both keys into the MetaData wherever the output format is fetched.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I5a5ddfb023add57f30bf21ecd3242d4bcf0efd13
+---
+ AsyncCodecSource.cpp | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/AsyncCodecSource.cpp b/AsyncCodecSource.cpp
+index 2860d2e..a88691d 100644
+--- a/AsyncCodecSource.cpp
++++ b/AsyncCodecSource.cpp
+@@ -185,6 +185,22 @@ sp<MediaSource> AsyncCodecSource::Create(
+     return nullptr;
+ }
+ 
++// convertMessageToMetaData() drops a raw output's "stride" and "slice-height", which
++// droid_media_codec_get_output_info() needs to describe the buffer layout (see there).
++static sp<MetaData> outputFormatToMetaData(const sp<AMessage> &format)
++{
++    sp<MetaData> meta = new MetaData;
++    convertMessageToMetaData(format, meta);
++    int32_t value;
++    if (format != nullptr && format->findInt32("stride", &value)) {
++        meta->setInt32(kKeyStride, value);
++    }
++    if (format != nullptr && format->findInt32("slice-height", &value)) {
++        meta->setInt32(kKeySliceHeight, value);
++    }
++    return meta;
++}
++
+ AsyncCodecSource::AsyncCodecSource(
+         const AString &codecName, const sp<MediaSource> &source, const sp<ALooper> &looper,
+         bool isVorbis)
+@@ -224,8 +240,7 @@ bool AsyncCodecSource::configure(const sp<AMessage> format, const sp<Surface> su
+     // Set output format metadata
+     sp<AMessage> outputFormat;
+     mCodec->getOutputFormat(&outputFormat);
+-    sp<MetaData> meta = new MetaData;
+-    convertMessageToMetaData(outputFormat, meta);
++    sp<MetaData> meta = outputFormatToMetaData(outputFormat);
+     mMeta.lock().set(meta);
+ 
+     mOutput.lock()->mReachedEOS = false;
+@@ -424,8 +439,7 @@ void AsyncCodecSource::onMessageReceived(const sp<AMessage> &msg) {
+             mState = ERROR;
+             return;
+         }
+-        sp<MetaData> meta = new MetaData;
+-        convertMessageToMetaData(outputFormat, meta);
++        sp<MetaData> meta = outputFormatToMetaData(outputFormat);
+         mMeta.lock().set(meta);
+         MediaBuffer     *buffer = new MediaBuffer(0);
+         Mutexed<Output>::Locked me(mOutput);
+-- 
+2.53.0
+

@@ -150,7 +150,7 @@ repo start hybris-23.2 external/droidmedia hybris/hybris-boot
 | `system/core` | regenerate the linker configuration after `enter_default_mount_ns` (Android 16 init) | to offer to mer-hybris |
 | `system/apex` | skip the SELinux context check of decompressed APEXes without SELinux | to offer to mer-hybris |
 | `frameworks/av` | expose the physical cameras of logical multi-cameras to camera API1 (ultrawide) | to offer to mer-hybris |
-| `external/droidmedia` | Halium's adaptation to LineageOS 23.2 (Android 16 QPR2), and a revert of 81db5a7 that keeps the codec metadata layout of Sailfish OS 5.1's gst-droid | revert to be dropped once Jolla ships a matching gst-droid |
+| `external/droidmedia` | Halium's adaptation to LineageOS 23.2 (Android 16 QPR2); a revert of 81db5a7 that keeps the codec metadata layout of Sailfish OS 5.1's gst-droid; raw decoder output named by its real layout (Qualcomm's NV12 with 128-aligned rows), with the codec's stride and slice height kept in the output metadata, which fixes browser video whose width is not a multiple of 128 | revert to be dropped once Jolla ships a matching gst-droid; the layout fix to offer to sailfishos/droidmedia |
 | `hybris/hybris-boot` | pdx246 entry in `fixup-mountpoints`; init-script switches the USB controller to peripheral mode when the UDC is missing | to offer to mer-hybris |
 
 **libhybris:** `make hybris-hal` builds libhybris' compatibility layers from

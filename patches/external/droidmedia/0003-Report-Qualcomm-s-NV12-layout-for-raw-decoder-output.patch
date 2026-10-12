@@ -1,0 +1,62 @@
+From 1a7897fb16b54cd92ab66ce96a071efb65cbc4d7 Mon Sep 17 00:00:00 2001
+From: Johannes Meyer zum Alten Borgloh <code@jzab.de>
+Date: Mon, 12 Oct 2026 20:32:50 +0200
+Subject: [PATCH 3/4] Report Qualcomm's NV12 layout for raw decoder output
+
+droid_media_codec_get_output_info() has no stride fields in the ABI Sailfish OS 5.1.0.11's consumers are built against (gecko-camera-droid-plugin 0.1.10, gst-droid 0.20251025.0), so they derive the plane layout from hal_format: for OMX_COLOR_FormatYUV420SemiPlanar rows of the width (rounded up to 16 in gecko-camera) without slice padding, for QOMX_COLOR_FormatYUV420PackedSemiPlanar32m Qualcomm's layout (rows aligned to 128, planes to 32 rows). Qualcomm's Codec2 decoders write the latter but report the former, so every raw-mode picture whose width is not a multiple of 128 came out scrambled (VP9 in the browser: 854x480, 360x640) and the chroma plane was misplaced when the height is not a multiple of 32 (640x360: slice height 384).
+
+When the codec's stride and slice height are exactly the 32m layout, report that format. Otherwise nothing changes, and a layout that matches neither format is logged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: I4a62405d03dafbae9523d1fee506711bee3eef85
+---
+ droidmediacodec.cpp | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/droidmediacodec.cpp b/droidmediacodec.cpp
+index 9d75d22..683a292 100644
+--- a/droidmediacodec.cpp
++++ b/droidmediacodec.cpp
+@@ -39,6 +39,7 @@
+ #endif
+ 
+ #include "mediabuffers.h"
++#include "droidmediaconstants.h"
+ 
+ #if ANDROID_MAJOR < 7
+ #include <media/stagefright/OMXCodec.h>
+@@ -1162,6 +1163,31 @@ void droid_media_codec_get_output_info(DroidMediaCodec *codec,
+   md->findInt32(android::kKeySampleRate, &info->sample_rate);
+   md->findInt32(android::kKeyColorFormat, &info->hal_format);
+ 
++  // Raw (byte buffer) decoder output. This ABI has no stride fields, so consumers derive the
++  // plane layout from hal_format and the size. For OMX_COLOR_FormatYUV420SemiPlanar,
++  // gecko-camera-droid-plugin 0.1.10 assumes rows of the width rounded up to 16 and gst-droid
++  // 0.20251025.0 rows of the width, both without slice padding; for
++  // QOMX_COLOR_FormatYUV420PackedSemiPlanar32m both assume Qualcomm's layout (rows aligned to
++  // 128, planes to 32 rows). Qualcomm's Codec2 decoders deliver that layout but report the
++  // former format, which scrambles every picture whose width is not a multiple of 128 (VP9 in
++  // the browser). Report the format that matches the stride and slice height the codec used.
++  int32_t stride = 0, slice_height = 0;
++  if (md->findInt32(android::kKeyStride, &stride) &&
++      md->findInt32(android::kKeySliceHeight, &slice_height)) {
++    DroidMediaColourFormatConstants c;
++    droid_media_colour_format_constants_init(&c);
++    if (info->hal_format == c.OMX_COLOR_FormatYUV420SemiPlanar) {
++      if (stride == ((info->width + 127) & ~127) && slice_height == ((info->height + 31) & ~31)) {
++        ALOGI("Raw output %dx%d, stride %d, slice height %d: reporting the QOMX 32m layout",
++              info->width, info->height, stride, slice_height);
++        info->hal_format = c.QOMX_COLOR_FormatYUV420PackedSemiPlanar32m;
++      } else if (stride != info->width || slice_height != info->height) {
++        ALOGW("Raw output %dx%d has stride %d, slice height %d: consumers may misread it",
++              info->width, info->height, stride, slice_height);
++      }
++    }
++  }
++
+   if (!md->findRect(android::kKeyCropRect, &crop->left, &crop->top, &crop->right, &crop->bottom)) {
+     crop->left = crop->top = 0;
+     crop->right = info->width;
+-- 
+2.53.0
+
