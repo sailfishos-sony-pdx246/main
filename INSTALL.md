@@ -48,6 +48,10 @@ boot chain of slot a. This is an unofficial community port, not affiliated with 
    ./flash.sh
    ```
 
+   The script runs fastboot through `sudo`, which resets the `PATH`. If your fastboot is not in
+   root's `PATH` (for example platform-tools unpacked in your home folder), name it:
+   `./flash.sh --fastboot /path/to/platform-tools/fastboot`.
+
 The script checks the phone model and the md5 sums, makes slot a active and reboots into the
 userspace fastboot (fastbootd) of the LineageOS recovery. There `flash-preflight.sh` checks that
 fastbootd runs from slot a, that no Virtual A/B merge is pending and that `vendor_dlkm_a`
