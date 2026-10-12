@@ -41,15 +41,18 @@ case " $* " in *" d "*) case " $* " in *" imgboot "*) ;; *) echo "Note: step d w
 for step in "$@"; do
 	case $step in
 	d) run d $BP -d ;;                      # droid-hal-pdx246 (rpm/)
-	c) run c $BP -c ;;                      # droid-config-pdx246 (hybris/droid-configs)
+	# -o (offline) wherever middleware is built: sailfish.xml pins it, repo leaves those checkouts
+	# on a detached HEAD, and build_packages.sh's `git pull` fails there (and would move them off
+	# the pin). Step c builds community-adaptation first, so it needs -o too.
+	c) run c $BP -o -c ;;                   # droid-config-pdx246 (hybris/droid-configs)
 	pa)                                     # pulseaudio-modules-droid pinned to 14.2.106
 		if [ ! -d hybris/mw/pulseaudio-modules-droid ]; then
 			run pa git clone --recurse-submodules https://github.com/mer-hybris/pulseaudio-modules-droid.git hybris/mw/pulseaudio-modules-droid
 		fi
 		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout 65edd31f62f22e2eec1f765608ca9c6ae5c4af7b ;;
 	mw) run mw $BP -o --mw ;;               # default middleware set, offline (keeps the pin)
-	dynparts) run dynparts $BP --mw=https://github.com/sailfish-on-nabu/parse-android-dynparts ;;
-	sensorfw) run sensorfw $BP --mw=https://github.com/sailfishos/sensorfw --spec=rpm/sensorfw-qt5-binder.spec ;;
+	dynparts) run dynparts $BP -o --mw=https://github.com/sailfish-on-nabu/parse-android-dynparts ;;
+	sensorfw) run sensorfw $BP -o --mw=https://github.com/sailfishos/sensorfw --spec=rpm/sensorfw-qt5-binder.spec ;;
 	# geoclue-providers-hybris: the port's branch in hybris/mw, pdx246-0.3.1 (0.3.1 plus the
 	# AIDL interface-version check); offline so build_packages does not git pull it.
 	geoclue) run geoclue $BP -o --mw=geoclue-providers-hybris --spec=rpm/geoclue-providers-hybris-binder.spec ;;
