@@ -5,11 +5,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Building Sailfish OS for the Sony Xperia 10 VI (pdx246)
 
-> **Draft (2026-10-11).** This describes the build as it is done today. The source steps
-> (section 3: sync with these manifests, submodules, hybris patches, this port's patches) were
-> tested on 2026-10-11 and reproduce the developer's tree file for file; a complete build from
-> scratch on a clean machine has not been done yet. The port's repositories are at
-> https://github.com/sailfishos-sony-pdx246.
+> **Tested end to end (2026-10-11/12).** A build from these repositories alone, in a new
+> directory with a freshly installed Platform SDK and build target, reproduced the developer's
+> image: the same 795 packages, Jolla's at identical versions and this port's at the same
+> commits. The port's repositories are at https://github.com/sailfishos-sony-pdx246.
 
 The port runs Sailfish OS 5.1.0.11 on top of the LineageOS 23.2 (Android 16 QPR2) port for the
 Xperia 10 VI (XQ-ES54, XQ-ES72; one build for both). It uses libhybris: the Android vendor
@@ -57,8 +56,7 @@ Download the Sailfish OS 5.1.0.11 SDK parts (check the published checksums):
 - `https://releases.sailfishos.org/ubu/ubuntu-focal-20210531-android-rootfs.tar.bz2` (only if you
   build the Android half in Jolla's Ubuntu chroot; see section 4)
 
-`scripts/install-sdks.sh <download dir> <android tree>` does the rest (generalised from the port's
-own install script; not yet run in this form):
+`scripts/install-sdks.sh <download dir> <android tree>` does the rest (about 2 minutes):
 
 1. Unpack the Platform SDK to `/srv/sailfishos/sdks/sfossdk` (`sudo tar --numeric-owner -p -xjf`).
 2. Inside it (`/srv/sailfishos/sdks/sfossdk/sdk-chroot`): `sudo zypper ref` (an error for
@@ -105,7 +103,8 @@ droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybr
   from that tree through alternates without telling you, and a later `git gc` or the removal of
   the LineageOS tree then breaks this one. Sync fresh, or reference a `repo init --mirror`.
 - AOSP rate-limits big syncs (HTTP 429): rerun `repo sync` with `-j2` for the failed projects.
-  The first sync downloads about 81 GB and took 3½ hours here.
+  The first sync downloads about 81 GB and takes 3½ to 4½ hours (the 2026-10-11 test needed one
+  `-j2` rerun).
 
 **Local manifests** (in `local_manifests/` of this repository):
 
@@ -116,9 +115,16 @@ droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybr
 | `droidmedia.xml` | `sailfishos/droidmedia` at `master` (the hybris-23.2 manifest pins branch `android15`, which was merged and deleted upstream) |
 | `sailfish.xml` | the adaptation repositories and the middleware of section 5 at their paths in the tree, all pinned |
 
-**Vendor blobs:** extract them as for LineageOS, with the device tree's `extract-files.py`
-(from the stock firmware or a phone running the pinned LineageOS release). The port does not
-ship them.
+**Vendor blobs:** extract them as for LineageOS, with the device tree's `extract-files.py`, from
+the stock firmware, a phone running the pinned LineageOS release, or that release's OTA zip:
+
+```sh
+cd device/sony/pdx246 && ./extract-files.py <path>/lineage-23.2-20260924-UNOFFICIAL-pdx246.zip
+```
+
+From the OTA zip, every library, binary and firmware file comes out identical to the developer's
+copy (3214 files); only APKs differ, which LineageOS repackages and Sailfish OS does not use. The
+port does not ship the blobs.
 
 **Sailfish's hybris patches:** start branches on the patched projects first (the script commits
 onto whatever is checked out, and a later `repo sync` drops commits on a detached HEAD), then:
@@ -166,15 +172,15 @@ without it, hybris-boot's `droidmedia` target is empty and the build "succeeds" 
 `gate` runs `hybris/mer-kernel-check/mer_verify_kernel_config` on the kernel's `.config`; it
 must report 0 ERRORs (the package build stops on any). `build` then checks the results: 351
 modules in vendor_dlkm and 302 in vendor_ramdisk, a kernel release without `-dirty`, boot
-header versions, and the droidmedia and audio-compat binaries. About 30 minutes on a 20-core
-host with a warm ccache.
+header versions, and the droidmedia and audio-compat binaries. About 35 minutes on a 20-core
+host without ccache (gate 4, build 30).
 
 ## 5. Build the packages and the image
 
 Middleware with this port's fixes lives in `hybris/mw/`, at these branches (checked out by
-`sailfish.xml`). `build_packages.sh` clones any missing
-middleware at its upstream branch head, but with `-o` it builds an existing checkout as is,
-so these must be in place first:
+`sailfish.xml`). `build_packages.sh` clones any missing middleware at its upstream branch head,
+but with `-o` it builds an existing checkout as is, so these must be in place first. It takes
+each package's version from `git describe --tags`; the forks carry the upstream tags it needs.
 
 | Path | Upstream | Branch (commit) | Why |
 |---|---|---|---|
@@ -199,7 +205,8 @@ pulseaudio-modules-droid 65edd31 (14.2.106), pulseaudio-modules-droid-hidl 818df
 mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin 31f4f65, sensorfw b889c3d,
 parse-android-dynparts 4e6f70f, community-adaptation 8afd975.
 
-Then, from the host (asks for the `sudo` password once, through `sdk-chroot`):
+Then, from the host (asks for the `sudo` password once, through `sdk-chroot`; the steps never
+prompt, so the run can be left alone: all packages in about 20 minutes, the image in about 7):
 
 ```sh
 /srv/sailfishos/sdks/sfossdk/sdk-chroot bash /parentroot<main>/scripts/build-packages-sdk.sh
@@ -240,3 +247,10 @@ with the `.packages` list and the kickstart next to it. `mic` can fail while
   excludes (pdx246's touchscreen firmware includes): build the kernel from a fresh clone once.
 - `hybris/hybris-boot/fixup-mountpoints` patterns are unanchored substrings: generate the list
   from the phone, longest names first.
+- Anything that waits for an answer inside the SDK (a bare `build_packages.sh --mw`,
+  `sdk-assistant` without `-y`) does not show its question when the output goes into a pipe:
+  sudo runs the command in the background of its own pseudo-terminal, and the read suspends it.
+  `build-packages-sdk.sh` avoids all of them.
+- Packages built from `repo` checkouts carry `+HEAD` in their version where a branch checkout
+  has the branch name; they sort below such builds, which matters only when mixing both on one
+  phone.

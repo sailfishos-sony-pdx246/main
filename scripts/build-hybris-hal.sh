@@ -66,7 +66,7 @@ build)
 	echo "=== audio compat: $(ls $O/system/lib64/hw/audio.hidl_compat.default.so 2>&1)"
 	echo "=== images"
 	ls -la --time-style=+%F_%T $O/hybris-boot.img $O/hybris-recovery.img $O/boot.img \
-		$O/vendor_boot.img $O/dtbo.img $O/vendor.img $O/vendor_dlkm.img 2>&1
+		$O/vendor_boot.img $O/dtbo.img $O/vendor_dlkm.img 2>&1
 	for i in hybris-boot hybris-recovery; do
 		echo "$i: $(python3 system/tools/mkbootimg/unpack_bootimg.py --boot_img $O/$i.img 2>/dev/null |
 			grep -E 'boot image header version' | head -1)"
