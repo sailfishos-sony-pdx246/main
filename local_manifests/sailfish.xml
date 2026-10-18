@@ -13,13 +13,13 @@
 
   <!-- Adaptation -->
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
-           revision="2fd48e465725a6b472e27427c0223c4ee1621c61" upstream="main" sync-s="true" />
+           revision="a05eb7b359f2f4af9581c465a1041a683e6f2a77" upstream="main" sync-s="true" />
   <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
-           revision="df687df0c6a028b307ce4a241df3e81951d23702" upstream="main" sync-s="true" />
+           revision="2aee1a4513f2b6d25582ea7bec0faefea503c567" upstream="main" sync-s="true" />
   <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
            revision="b2140863209a03ea4b0ae3d0337ff713a788e16d" upstream="main" sync-s="true" />
   <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
-           revision="e00164155b6035c7bd370a9ce417d3951c6edb82" upstream="main" sync-s="true" />
+           revision="6be42d14e3f6e009c86d7db4061287f87ed5f2ba" upstream="main" sync-s="true" />
 
   <!-- Middleware with this port's fixes -->
   <project path="hybris/mw/libhybris" name="libhybris" remote="pdx246"

@@ -15,7 +15,7 @@
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
   <remote name="johanneszab" fetch="https://github.com/johanneszab" />
   <project path="device/sony/pdx246" name="android_device_sony_pdx246" remote="pdx246"
-           revision="d7d70562c4ba3cf0e8e9bea12912df3ae098887e" upstream="hybris-23.2" />
+           revision="948da1759c9fc462cd205af6f35c41004e141029" upstream="hybris-23.2" />
   <project path="kernel/sony/sm6450" name="android_kernel_sony_sm6450" remote="pdx246"
            revision="ed8ecc8be140e2d28c3d9268b09fc937c82b81ef" upstream="hybris-23.2" />
   <project path="kernel/sony/sm6450-modules" name="android_kernel_sony_sm6450-modules" remote="johanneszab"
