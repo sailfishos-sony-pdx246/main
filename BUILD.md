@@ -90,13 +90,14 @@ mkdir -p .repo/local_manifests
 cp <main>/local_manifests/*.xml .repo/local_manifests/
 repo sync -c -j8 --no-clone-bundle --retry-fetches=2 --force-sync
 for p in rpm hybris/droid-configs hybris/droid-hal-version-pdx246 \
-        hybris/mw/droid-hal-img-boot-pdx246 hybris/mw/libhybris; do
+        hybris/mw/droid-hal-img-boot-pdx246 hybris/mw/libhybris hybris/mw/waydroid; do
     git -C $p submodule update --init --recursive
 done
 ```
 
-The last loop checks out the submodules of the adaptation repositories and libhybris (mer-hybris'
-droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybris' source):
+The last loop checks out the submodules of the adaptation repositories, libhybris and Waydroid
+(mer-hybris' droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybris'
+source, Waydroid's upstream source):
 `repo sync` records them but does not check them out.
 
 - **Never** pass `--reference <your LineageOS checkout>` to `repo init`: it borrows objects

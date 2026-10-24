@@ -98,7 +98,8 @@ for step in "$@"; do
 	# spec's patches are applied here, in spec order, on the clean tag, and the submodule is
 	# put back on the clean tag afterwards.
 	# -N: the version comes from the spec, not from the packaging repo's tags.
-	waydroid) run waydroid-clean sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq'
+	# Without a checked-out submodule, git -C upstream would act on the packaging repo itself.
+	waydroid) run waydroid-clean sh -c '[ -e hybris/mw/waydroid/upstream/.git ] || { echo "hybris/mw/waydroid/upstream is not checked out: git -C hybris/mw/waydroid submodule update --init"; exit 1; }; git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq'
 	          run waydroid-patch sh -c 'cd hybris/mw/waydroid && for p in $(sed -n "s/^Patch[0-9]*:[[:space:]]*//p" rpm/waydroid.spec); do echo "applying $p"; git -C upstream apply "../rpm/$p" || exit 1; done'
 	          run waydroid $BP -o -N --mw=waydroid --spec=rpm/waydroid.spec
 	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
