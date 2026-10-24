@@ -17,7 +17,7 @@
   <project path="device/sony/pdx246" name="android_device_sony_pdx246" remote="pdx246"
            revision="948da1759c9fc462cd205af6f35c41004e141029" upstream="hybris-23.2" />
   <project path="kernel/sony/sm6450" name="android_kernel_sony_sm6450" remote="pdx246"
-           revision="ed8ecc8be140e2d28c3d9268b09fc937c82b81ef" upstream="hybris-23.2" />
+           revision="c4bf2dd135832b8444b811a6ab72368efcc5d494" upstream="hybris-23.2" />
   <project path="kernel/sony/sm6450-modules" name="android_kernel_sony_sm6450-modules" remote="johanneszab"
            revision="5f823f90b852edf3d8c848a270173113ff523fe9" upstream="lineage-23.2" />
   <project path="kernel/sony/sm6450-devicetrees" name="android_kernel_sony_sm6450-devicetrees" remote="johanneszab"

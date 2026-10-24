@@ -7,7 +7,9 @@
      to the commits the port is built and tested with. build_packages.sh -o builds what is
      checked out here and only clones what is missing.
      libhybris' submodule (the source) comes from github.com/sailfishos-sony-pdx246/libhybris-source;
-     droid-bthelper needs its tag 0.3.0 (build_packages.sh -o derives the version from it). -->
+     droid-bthelper needs its tag 0.3.0 (build_packages.sh -o derives the version from it).
+     waydroid is sailfishos-open's packaging: upstream 1.6.3 as submodule (waydroid/waydroid at
+     the tag), the port's patches in rpm/; not in the image (build-packages-sdk.sh step waydroid). -->
 <manifest>
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
@@ -15,7 +17,7 @@
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
            revision="a05eb7b359f2f4af9581c465a1041a683e6f2a77" upstream="main" sync-s="true" />
   <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
-           revision="2aee1a4513f2b6d25582ea7bec0faefea503c567" upstream="main" sync-s="true" />
+           revision="196b157f532a0a00e747a7328eeb6d2b131925c1" upstream="main" sync-s="true" />
   <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
            revision="b2140863209a03ea4b0ae3d0337ff713a788e16d" upstream="main" sync-s="true" />
   <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
@@ -34,6 +36,8 @@
            revision="a9598ebfa8e6de81c1c7e2e58b6e2ba81f223f3d" upstream="pdx246-1.2.0" />
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
+  <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
+           revision="8f6716f07b042855520731748a312efcf9a8902d" upstream="pdx246-1.6.3" sync-s="true" />
 
   <!-- Default middleware, upstream, pinned -->
   <project path="hybris/mw/pulseaudio-modules-droid" name="mer-hybris/pulseaudio-modules-droid" remote="github"
