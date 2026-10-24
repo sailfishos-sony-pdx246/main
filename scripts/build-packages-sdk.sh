@@ -8,7 +8,7 @@
 # The tree is ANDROID_ROOT from ~/.hadk.env; logs go to $PDX246_LOG_DIR, by default to
 # build-logs/ next to the tree.
 # Steps, in order (default: all): d c pa mw dynparts sensorfw geoclue imsqti nfc bthelper g imgboot v i
-# Extra step (not in the default list): libhybris
+# Extra steps (not in the default list): libhybris, waydroid
 # Each step logs to pkg-<date>-<step>.log and the run stops at the first failure,
 # so it can be resumed by naming the remaining steps.
 # After d, always rebuild imgboot too: droid-hal-pdx246-img-boot requires the exact
@@ -90,6 +90,18 @@ for step in "$@"; do
 	# libhybris alone (the mw step also builds it): branch pdx246-0.0.5.58 = 0.0.5.58 plus 'keep
 	# libcutils loaded at exit' (getprop/setprop aborted in the atexit dlclose). Not in the default list.
 	libhybris) run libhybris $BP -o --mw=libhybris --spec=rpm/libhybris.spec ;;
+	# Waydroid (not in the image; users install it with droid-config-pdx246-waydroid):
+	# sailfishos-open/waydroid at hybris/mw/waydroid, branch pdx246-1.6.3 (upstream 1.6.3 as
+	# submodule, patches in rpm/). mb2 builds in place inside upstream/ and skips %prep, so
+	# the patches would silently be left out (the first build packaged plain 1.6.3,
+	# 2026-10-23); %prep must not run in place either, %setup would remove upstream/. So the
+	# spec's patches are applied here, in spec order, on the clean tag, and the submodule is
+	# put back on the clean tag afterwards.
+	# -N: the version comes from the spec, not from the packaging repo's tags.
+	waydroid) run waydroid-clean sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq'
+	          run waydroid-patch sh -c 'cd hybris/mw/waydroid && for p in $(sed -n "s/^Patch[0-9]*:[[:space:]]*//p" rpm/waydroid.spec); do echo "applying $p"; git -C upstream apply "../rpm/$p" || exit 1; done'
+	          run waydroid $BP -o -N --mw=waydroid --spec=rpm/waydroid.spec
+	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
 	g) run g $BP -g ;;                      # droidmedia, gst-droid
 	imgboot) run imgboot $BP -o -N --mw=droid-hal-img-boot-pdx246 ;;
 	v) run v-config config_in
