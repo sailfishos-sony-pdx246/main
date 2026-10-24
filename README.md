@@ -10,7 +10,9 @@ with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone
 
 **Status:** first release (2026-10-12). Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
-[INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)).
+[INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)). Android apps run
+with Waydroid on the development phone; that needs the kernel of the next release
+([INSTALL.md](INSTALL.md), section 8).
 
 ## What works
 
@@ -33,7 +35,8 @@ Tested on the developer's phone (XQ-ES54):
   port.
 - The hotspot runs on 2.4 GHz only.
 - No update channel yet: a new version means flashing again, which erases the userdata
-  partition.
+  partition. Never run `zypper dup` or `version --dup`: it removes the port's packages
+  ([INSTALL.md](INSTALL.md), section 7).
 - Not tested yet: reading NFC NDEF tags, NFC card emulation.
 
 ## Repositories
@@ -48,7 +51,7 @@ All in [github.com/sailfishos-sony-pdx246](https://github.com/sailfishos-sony-pd
 | `droid-hal-version-pdx246` | image version package |
 | `droid-hal-img-boot-pdx246` | boot and recovery image package |
 | `android_device_sony_pdx246`, `android_kernel_sony_sm6450` | the LineageOS port's device tree and kernel with the Sailfish OS changes (branch `hybris-23.2`) |
-| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper` | middleware with this port's fixes (branches `pdx246-*`) |
+| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid` | middleware with this port's fixes (branches `pdx246-*`) |
 
 ## Licences
 

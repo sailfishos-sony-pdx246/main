@@ -115,3 +115,87 @@ images to the `_a` partitions; from fastbootd (`fastboot reboot fastboot`), flas
 There is no update channel yet: a new image means flashing again (section 4), which erases the
 userdata partition. Package updates through `zypper` will follow once the port has a package
 repository.
+
+**Never run `zypper dup`, `version --dup` or `sfos-upgrade` on this port.** Its packages are in
+no repository, so a distribution upgrade replaces them with other builds or removes them: a test
+run planned to remove droid-config-pdx246, droid-hal-version-pdx246 and libhybris' graphics
+libraries, to install a software renderer instead, and to downgrade the port's GPS, NFC, VoLTE and
+sensor fixes. The phone would most likely not start its user interface afterwards. Before you
+confirm a `zypper up`, check that it does not replace one of the port's packages either.
+
+## 8. Android apps with Waydroid
+
+Waydroid runs Android 13 (LineageOS 20) in a container, with the phone's GPU. It is not part of
+the image; install it as below. It needs the kernel of a release after the first one
+(v5.1.0.11-20261012 lacks the binder devices the container uses).
+
+What to expect: Android runs inside the Waydroid app, in its own window, and only while the app is
+open. Android apps do not appear in the app grid, and their notifications do not reach Sailfish
+OS. The images below have no Google services.
+
+All commands run in a root shell (`devel-su`, needs Developer mode).
+
+1. Add the Chum repository. It has the Waydroid app (waydroid-runner) and Waydroid's dependencies:
+
+   ```sh
+   ssu ar sailfishos-chum https://repo.sailfishos.org/obs/sailfishos:/chum/5.1_aarch64/
+   zypper ref sailfishos-chum
+   ```
+
+2. Download the port's Waydroid packages from the release (`waydroid-1.6.3-1.noarch.rpm`,
+   `waydroid-gbinder-config-hybris-1.6.3-1.noarch.rpm` and
+   `droid-config-pdx246-waydroid-<version>.aarch64.rpm`), for example with the browser into
+   Downloads, and install them from that folder together with the app:
+
+   ```sh
+   cd /home/defaultuser/Downloads
+   zypper in --allow-unsigned-rpm ./waydroid-1.6.3-1.noarch.rpm \
+       ./waydroid-gbinder-config-hybris-1.6.3-1.noarch.rpm \
+       ./droid-config-pdx246-waydroid-*.aarch64.rpm waydroid-runner
+   ```
+
+   Use these instead of Chum's `waydroid`: they carry the fixes for this phone's Android 16 vendor
+   and binder devices, and droid-config-pdx246-waydroid sets the phone up for them.
+
+3. Download the Android images, about 950 MB, and unpack them where Waydroid looks for
+   preinstalled images (unpacking needs about 3 GB free in /home). `waydroid init` cannot
+   download images for this phone itself: there is no vendor image channel for it. These are the
+   images the port is tested with, LineageOS 20 of 2026-09-27:
+
+   ```sh
+   cd /home/waydroid-extra
+   curl -L -o system.zip https://sourceforge.net/projects/waydroid/files/images/system/lineage/waydroid_arm64/lineage-20.0-20260927-VANILLA-waydroid_arm64-system.zip/download
+   curl -L -o vendor.zip https://sourceforge.net/projects/waydroid/files/images/vendor/waydroid_arm64/lineage-20.0-20260927-HALIUM_13-waydroid_arm64-vendor.zip/download
+   sha256sum system.zip vendor.zip
+   ```
+
+   The sums must be `5fb8179ed4455f45919c5a2bfbfdd1591619295994ad321217f03bb1dcfc53a7` for
+   system.zip and `b1dde0b0f97bb06812c952424925f61c17e73d91f54b0f7c77d272621d473a9e` for
+   vendor.zip. Then:
+
+   ```sh
+   python3 -m zipfile -e system.zip images/
+   python3 -m zipfile -e vendor.zip images/
+   rm system.zip vendor.zip
+   ```
+
+4. Set Waydroid up and start its service (after a reboot it starts by itself):
+
+   ```sh
+   waydroid init
+   systemctl start waydroid-container
+   ```
+
+5. Open **Waydroid** from the app grid. The first start takes several minutes while Android
+   prepares its apps; if the app closes before Android appears, open it again. Later starts take
+   about 20 seconds. Install Android apps inside Android, for example F-Droid from f-droid.org in
+   Android's browser.
+
+**If Android does not start:** `systemctl status waydroid-container` shows why the service refused
+to start (lines beginning with `pdx246-waydroid:`), and `waydroid log` shows Waydroid's log. Do not
+use `waydroid show-full-ui` or the waydroid-settings package: Android then gets no touch input.
+
+**Removing Waydroid:** `zypper rm --clean-deps waydroid` removes it with the app, the port's
+Waydroid packages and the dependencies installed for them. Android's system and data stay in
+`/home/waydroid`, `/home/waydroid-extra` and `.local/share/waydroid` in your home folder; delete
+these to free the space.
