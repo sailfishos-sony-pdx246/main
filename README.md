@@ -8,11 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.1.0.11 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** first release (2026-10-12). Download the image from the
+**Status:** second release (2026-10-24), with Android apps through Waydroid. Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
 [INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)). Android apps run
-with Waydroid on the development phone; that needs the kernel of the next release
-([INSTALL.md](INSTALL.md), section 8).
+with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
 
 ## What works
 
@@ -27,9 +26,12 @@ Tested on the developer's phone (XQ-ES54):
 - GNSS, NFC (tag and card detection), fingerprint unlock
 - USB: MTP, developer mode, charging only, charging with the charging limit from Settings
 - Standby (about 10 mA overnight)
+- Android apps with Waydroid: graphics with the GPU, touch, network, audio and video
 
 ## Known issues
 
+- Waydroid: Android runs only while the Waydroid app is open, Android apps do not appear in the
+  app grid, and their notifications do not reach Sailfish OS.
 - The call screen does not group merged calls into a conference (no participant list); "End
   call" ends the whole conference. This comes from Sailfish OS's call handling, not from the
   port.

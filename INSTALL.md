@@ -65,8 +65,25 @@ and the modules of `vendor_boot_a`; on the first install these are still Lineage
 **If `flash.sh` stops halfway** (the USB connection can drop during a large transfer):
 reconnect until `fastboot devices` lists the phone, run `fastboot reboot bootloader`, and
 start `./flash.sh` again. If it stops right after "reboot fastboot" with `FAILED (usb_read
-failed: No such device)`, the phone usually reached fastbootd anyway: check with
-`fastboot getvar is-userspace`.
+failed: No such device)`, the phone usually reached fastbootd anyway (`fastboot getvar
+is-userspace` answers `yes`). A new run can hit the same race; instead, finish the remaining
+steps of `flash.sh` by hand, in the image's directory (with `sudo` if your fastboot needs it;
+for a fastboot outside the `PATH`, give its path, and run the first line as
+`FASTBOOT_BIN_NAME=/path/to/fastboot ./flash-preflight.sh`):
+
+```sh
+./flash-preflight.sh
+fastboot flash vendor_dlkm_a vendor_dlkm.img
+fastboot flash userdata sailfish.img001
+fastboot reboot bootloader
+fastboot flash boot_a hybris-boot.img
+fastboot flash vendor_boot_a vendor_boot.img
+fastboot flash dtbo_a dtbo.img
+fastboot --set-active=a
+fastboot reboot
+```
+
+Do not go on if the pre-flight check fails.
 
 **Flashing by hand:** see `flashing-README.txt` in the zip. Always use the explicit `_a`
 partition names, flash logical partitions (`vendor_dlkm_a`) from fastbootd only, and flash
@@ -126,8 +143,8 @@ confirm a `zypper up`, check that it does not replace one of the port's packages
 ## 8. Android apps with Waydroid
 
 Waydroid runs Android 13 (LineageOS 20) in a container, with the phone's GPU. It is not part of
-the image; install it as below. It needs the kernel of a release after the first one
-(v5.1.0.11-20261012 lacks the binder devices the container uses).
+the image; install it as below. It needs release v5.1.0.11-20261024 or later: the first
+release's kernel lacks the binder devices the container uses.
 
 What to expect: Android runs inside the Waydroid app, in its own window, and only while the app is
 open. Android apps do not appear in the app grid, and their notifications do not reach Sailfish
@@ -139,10 +156,11 @@ All commands run in a root shell (`devel-su`, needs Developer mode).
 
    ```sh
    ssu ar sailfishos-chum https://repo.sailfishos.org/obs/sailfishos:/chum/5.1_aarch64/
-   zypper ref sailfishos-chum
+   zypper ref
    ```
 
-2. Download the port's Waydroid packages from the release (`waydroid-1.6.3-1.noarch.rpm`,
+2. Download the port's Waydroid packages from the
+   [release](https://github.com/sailfishos-sony-pdx246/main/releases/latest) (`waydroid-1.6.3-1.noarch.rpm`,
    `waydroid-gbinder-config-hybris-1.6.3-1.noarch.rpm` and
    `droid-config-pdx246-waydroid-<version>.aarch64.rpm`), for example with the browser into
    Downloads, and install them from that folder together with the app:
@@ -186,10 +204,9 @@ All commands run in a root shell (`devel-su`, needs Developer mode).
    systemctl start waydroid-container
    ```
 
-5. Open **Waydroid** from the app grid. The first start takes several minutes while Android
-   prepares its apps; if the app closes before Android appears, open it again. Later starts take
-   about 20 seconds. Install Android apps inside Android, for example F-Droid from f-droid.org in
-   Android's browser.
+5. Open **Waydroid** from the app grid. Android appears after about half a minute; if the app
+   closes before that, open it again. Install Android apps inside Android, for example F-Droid
+   from f-droid.org in Android's browser.
 
 **If Android does not start:** `systemctl status waydroid-container` shows why the service refused
 to start (lines beginning with `pdx246-waydroid:`), and `waydroid log` shows Waydroid's log. Do not
