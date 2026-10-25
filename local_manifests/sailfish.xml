@@ -17,7 +17,7 @@
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
            revision="a05eb7b359f2f4af9581c465a1041a683e6f2a77" upstream="main" sync-s="true" />
   <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
-           revision="7954327af7ccde35ff27beb49bb49c24dc9b3dce" upstream="main" sync-s="true" />
+           revision="548aee37cf9a58d703da3500b9783dc7cf1a9e3e" upstream="main" sync-s="true" />
   <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
            revision="b2140863209a03ea4b0ae3d0337ff713a788e16d" upstream="main" sync-s="true" />
   <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
@@ -37,7 +37,7 @@
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
-           revision="8f6716f07b042855520731748a312efcf9a8902d" upstream="pdx246-1.6.3" sync-s="true" />
+           revision="4a4115752070049f42c11a7894901b648b631c73" upstream="pdx246-1.6.3" sync-s="true" />
 
   <!-- Default middleware, upstream, pinned -->
   <project path="hybris/mw/pulseaudio-modules-droid" name="mer-hybris/pulseaudio-modules-droid" remote="github"

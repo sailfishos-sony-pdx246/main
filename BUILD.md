@@ -191,7 +191,7 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
 | `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.0 (a9598eb) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
-| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (8f6716f; patches in `rpm/`) | Android apps (not in the image) |
+| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (4a41157; patches in `rpm/`) | Android apps (not in the image) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
 And the adaptation repositories, at the paths the HADK scripts expect:
