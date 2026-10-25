@@ -11,8 +11,8 @@
      waydroid is sailfishos-open's packaging: upstream 1.6.3 as submodule (waydroid/waydroid at
      the tag), the port's patches in rpm/; not in the image (build-packages-sdk.sh step waydroid).
      waydroid-runner is sailfishos-open's runner with the port's background mode (Android keeps
-     running when its window is closed) and Android apps' launchers; not in the image either
-     (step runner). -->
+     running when its window is closed, a setting can make closing stop it) and Android apps'
+     launchers; not in the image either (step runner). -->
 <manifest>
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
@@ -42,7 +42,7 @@
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
            revision="1a62070c7cea77d1cdcf64ba137dd129fe931dba" upstream="pdx246-1.6.3" sync-s="true" />
   <project path="hybris/mw/waydroid-runner" name="waydroid-runner" remote="pdx246"
-           revision="2306351f957159b3f2c38708c2673a9b5bf87f19" upstream="pdx246-0.3.1" />
+           revision="b2134b5c56eb8bf53d5a9cb2f0a0790536d30b34" upstream="pdx246-0.3.1" />
 
   <!-- Default middleware, upstream, pinned -->
   <project path="hybris/mw/pulseaudio-modules-droid" name="mer-hybris/pulseaudio-modules-droid" remote="github"
