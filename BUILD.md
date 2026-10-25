@@ -191,7 +191,7 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
 | `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.0 (a9598eb) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
-| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (1a62070; patches in `rpm/`) | Android apps (not in the image) |
+| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (92344bf; patches in `rpm/`) | Android apps (not in the image) |
 | `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (b2134b5) | Android's window; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
