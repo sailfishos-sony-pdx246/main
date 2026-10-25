@@ -105,8 +105,8 @@ for step in "$@"; do
 	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
 	# Waydroid's window (not in the image either): the sailfishos-open/waydroid-runner fork at
 	# hybris/mw/waydroid-runner, branch pdx246-0.3.1 = 0.3.1 plus the background mode (Android keeps
-	# running when the window is closed). -N: the version comes from the spec; upstream's tags
-	# would make it 0.3.1.
+	# running when the window is closed) and app launching (Android apps' launchers, notification
+	# taps). -N: the version comes from the spec; upstream's tags would make it 0.3.1.
 	runner) run runner $BP -o -N --mw=waydroid-runner --spec=rpm/waydroid-runner.spec ;;
 	g) run g $BP -g ;;                      # droidmedia, gst-droid
 	imgboot) run imgboot $BP -o -N --mw=droid-hal-img-boot-pdx246 ;;

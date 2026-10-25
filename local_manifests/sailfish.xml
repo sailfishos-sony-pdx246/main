@@ -11,7 +11,8 @@
      waydroid is sailfishos-open's packaging: upstream 1.6.3 as submodule (waydroid/waydroid at
      the tag), the port's patches in rpm/; not in the image (build-packages-sdk.sh step waydroid).
      waydroid-runner is sailfishos-open's runner with the port's background mode (Android keeps
-     running when its window is closed); not in the image either (step runner). -->
+     running when its window is closed) and Android apps' launchers; not in the image either
+     (step runner). -->
 <manifest>
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
@@ -39,9 +40,9 @@
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
-           revision="4a4115752070049f42c11a7894901b648b631c73" upstream="pdx246-1.6.3" sync-s="true" />
+           revision="1a62070c7cea77d1cdcf64ba137dd129fe931dba" upstream="pdx246-1.6.3" sync-s="true" />
   <project path="hybris/mw/waydroid-runner" name="waydroid-runner" remote="pdx246"
-           revision="f1ff42ff5342cde298ec1c36dad0391891ee407e" upstream="pdx246-0.3.1" />
+           revision="2306351f957159b3f2c38708c2673a9b5bf87f19" upstream="pdx246-0.3.1" />
 
   <!-- Default middleware, upstream, pinned -->
   <project path="hybris/mw/pulseaudio-modules-droid" name="mer-hybris/pulseaudio-modules-droid" remote="github"
