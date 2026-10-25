@@ -40,7 +40,7 @@
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
-           revision="92344bfbc620d750935d92e18023b45912b7a5ae" upstream="pdx246-1.6.3" sync-s="true" />
+           revision="ff35cc83efe79ca4d4c90e0c99c1ca8d2d4f85ac" upstream="pdx246-1.6.3" sync-s="true" />
   <project path="hybris/mw/waydroid-runner" name="waydroid-runner" remote="pdx246"
            revision="b2134b5c56eb8bf53d5a9cb2f0a0790536d30b34" upstream="pdx246-0.3.1" />
 
