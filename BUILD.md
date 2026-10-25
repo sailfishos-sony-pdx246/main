@@ -192,6 +192,7 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.0 (a9598eb) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
 | `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (4a41157; patches in `rpm/`) | Android apps (not in the image) |
+| `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (f1ff42f) | Android's window; Android keeps running when it is closed (not in the image) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
 And the adaptation repositories, at the paths the HADK scripts expect:
@@ -229,6 +230,7 @@ can be resumed with the remaining steps):
 | `v` | droid-hal-version-pdx246 |
 | `i` | the image, with `mic` |
 | `waydroid` | Waydroid 1.6.3 with the port's patches (only when named; not in the image, see INSTALL.md section 8). mb2 skips `%prep`, so the step applies the spec's patches itself |
+| `runner` | waydroid-runner 0.4.0 with the background mode (only when named; not in the image) |
 
 The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.1.0.11-pdx246/Sailfish_OS-5.1.0.11-pdx246-<version>.zip`,
 with the `.packages` list and the kickstart next to it. `mic` can fail while

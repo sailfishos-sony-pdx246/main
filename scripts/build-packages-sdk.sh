@@ -8,7 +8,7 @@
 # The tree is ANDROID_ROOT from ~/.hadk.env; logs go to $PDX246_LOG_DIR, by default to
 # build-logs/ next to the tree.
 # Steps, in order (default: all): d c pa mw dynparts sensorfw geoclue imsqti nfc bthelper g imgboot v i
-# Extra steps (not in the default list): libhybris, waydroid
+# Extra steps (not in the default list): libhybris, waydroid, runner
 # Each step logs to pkg-<date>-<step>.log and the run stops at the first failure,
 # so it can be resumed by naming the remaining steps.
 # After d, always rebuild imgboot too: droid-hal-pdx246-img-boot requires the exact
@@ -103,6 +103,11 @@ for step in "$@"; do
 	          run waydroid-patch sh -c 'cd hybris/mw/waydroid && for p in $(sed -n "s/^Patch[0-9]*:[[:space:]]*//p" rpm/waydroid.spec); do echo "applying $p"; git -C upstream apply "../rpm/$p" || exit 1; done'
 	          run waydroid $BP -o -N --mw=waydroid --spec=rpm/waydroid.spec
 	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
+	# Waydroid's window (not in the image either): the sailfishos-open/waydroid-runner fork at
+	# hybris/mw/waydroid-runner, branch pdx246-0.3.1 = 0.3.1 plus the background mode (Android keeps
+	# running when the window is closed). -N: the version comes from the spec; upstream's tags
+	# would make it 0.3.1.
+	runner) run runner $BP -o -N --mw=waydroid-runner --spec=rpm/waydroid-runner.spec ;;
 	g) run g $BP -g ;;                      # droidmedia, gst-droid
 	imgboot) run imgboot $BP -o -N --mw=droid-hal-img-boot-pdx246 ;;
 	v) run v-config config_in
