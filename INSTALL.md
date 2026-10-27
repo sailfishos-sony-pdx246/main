@@ -52,38 +52,23 @@ boot chain of slot a. This is an unofficial community port, not affiliated with 
    root's `PATH` (for example platform-tools unpacked in your home folder), name it:
    `./flash.sh --fastboot /path/to/platform-tools/fastboot`.
 
-The script checks the phone model and the md5 sums, makes slot a active and reboots into the
-userspace fastboot (fastbootd) of the LineageOS recovery. There `flash-preflight.sh` checks that
-fastbootd runs from slot a, that no Virtual A/B merge is pending and that `vendor_dlkm_a`
-exists, and stops with an explanation if not, before anything is written. It then writes
-`vendor_dlkm_a` and `userdata` (the Sailfish OS root filesystem) from fastbootd, returns to the
-bootloader, writes `boot_a`, `vendor_boot_a` and `dtbo_a`, and reboots.
+The script checks the phone model and the md5 sums and makes slot a active. Then
+`flash-preflight.sh` reboots the phone into the userspace fastboot (fastbootd) of the LineageOS
+recovery and waits for it: a `FAILED (usb_read failed: No such device)` from that reboot only
+means that the reply got lost, which is common and harmless. It checks that fastbootd runs from
+slot a, that no Virtual A/B merge is pending and that `vendor_dlkm_a` exists, and stops with an
+explanation if not, before anything is written. The script then writes `vendor_dlkm_a` and
+`userdata` (the Sailfish OS root filesystem) from fastbootd, returns to the bootloader, writes
+`boot_a`, `vendor_boot_a` and `dtbo_a`, and reboots.
 
 fastbootd comes first because it lives in `recovery_a`, which boots with the kernel of `boot_a`
 and the modules of `vendor_boot_a`; on the first install these are still LineageOS's.
 
 **If `flash.sh` stops halfway** (the USB connection can drop during a large transfer):
 reconnect until `fastboot devices` lists the phone, run `fastboot reboot bootloader`, and
-start `./flash.sh` again. If it stops right after "reboot fastboot" with `FAILED (usb_read
-failed: No such device)`, the phone usually reached fastbootd anyway (`fastboot getvar
-is-userspace` answers `yes`). A new run can hit the same race; instead, finish the remaining
-steps of `flash.sh` by hand, in the image's directory (with `sudo` if your fastboot needs it;
-for a fastboot outside the `PATH`, give its path, and run the first line as
-`FASTBOOT_BIN_NAME=/path/to/fastboot ./flash-preflight.sh`):
-
-```sh
-./flash-preflight.sh
-fastboot flash vendor_dlkm_a vendor_dlkm.img
-fastboot flash userdata sailfish.img001
-fastboot reboot bootloader
-fastboot flash boot_a hybris-boot.img
-fastboot flash vendor_boot_a vendor_boot.img
-fastboot flash dtbo_a dtbo.img
-fastboot --set-active=a
-fastboot reboot
-```
-
-Do not go on if the pre-flight check fails.
+start `./flash.sh` again. A half-written `userdata` or `vendor_dlkm_a` is rewritten by the new
+run. If the run had already written `boot_a`, the new run cannot reach fastbootd (Sailfish OS
+starts instead); continue as in section 4.
 
 **Flashing by hand:** see `flashing-README.txt` in the zip. Always use the explicit `_a`
 partition names, flash logical partitions (`vendor_dlkm_a`) from fastbootd only, and flash
@@ -101,9 +86,9 @@ partition names, flash logical partitions (`vendor_dlkm_a`) from fastbootd only,
 ## 4. Flashing again over Sailfish OS
 
 fastbootd cannot be reached while `boot_a` holds Sailfish OS: `fastboot reboot fastboot` then
-just starts Sailfish OS again, and `flash.sh` waits for fastbootd forever (stop it with
-Ctrl-C; nothing has been written). So first enter the bootloader and flash the saved LineageOS
-images of the release to slot a:
+just starts Sailfish OS again, and `flash.sh` stops after 90 seconds (nothing has been written;
+on a computer without the `timeout` command it waits until you press Ctrl-C). So first enter
+the bootloader and flash the saved LineageOS images of the release to slot a:
 
 ```sh
 fastboot flash boot_a <LineageOS boot.img>
@@ -131,7 +116,7 @@ images to the `_a` partitions; from fastbootd (`fastboot reboot fastboot`), flas
 
 There is no update channel yet: a new image means flashing again (section 4), which erases the
 userdata partition. Package updates through `zypper` will follow once the port has a package
-repository.
+repository. Waydroid's packages are not part of the image: update them as section 8 describes.
 
 **Never run `zypper dup`, `version --dup` or `sfos-upgrade` on this port.** Its packages are in
 no repository, so a distribution upgrade replaces them with other builds or removes them: a test
@@ -146,49 +131,63 @@ Waydroid runs Android 13 (LineageOS 20) in a container, with the phone's GPU. It
 the image; install it as below. It needs release v5.1.0.11-20261024 or later: the first
 release's kernel lacks the binder devices the container uses.
 
-What to expect: Android runs inside the Waydroid app, in its own window, and only while the app is
-open. Android apps do not appear in the app grid, and their notifications do not reach Sailfish
-OS. The images below have no Google services.
+What to expect:
+
+- Android runs in the Waydroid app's window. Closing the window keeps Android running in the
+  background: it shows again at once, and its apps can notify you. To stop Android, open
+  Waydroid, go back to the home screen and tap the cross on its cover. To make every close stop
+  it, change **Closing the window** in Settings, Apps, Waydroid.
+- The Android apps you install appear in the app grid and open in the Waydroid window.
+  Android's own apps, such as its Clock or Settings, stay on Android's home screen.
+- Their notifications appear in Sailfish OS; tapping one opens the app. Notifications of an
+  app's running service stay in Android: a ringing Android alarm or timer is heard, but you stop
+  it in Waydroid, and a music app's controls appear only there.
+- Android follows Sailfish OS's time zone and its 24-hour clock setting.
+- The images below have no Google services: apps that depend on them may not work, and
+  notifications that come through Google's push service do not arrive.
 
 All commands run in a root shell (`devel-su`, needs Developer mode).
 
-1. Add the Chum repository. It has the Waydroid app (waydroid-runner) and Waydroid's dependencies:
+1. Add the Chum repository. It has Waydroid's dependencies python3-gbinder, waydroid-sensors and
+   dnsmasq:
 
    ```sh
    ssu ar sailfishos-chum https://repo.sailfishos.org/obs/sailfishos:/chum/5.1_aarch64/
    zypper ref
    ```
 
-2. Download the port's Waydroid packages from the
-   [release](https://github.com/sailfishos-sony-pdx246/main/releases/latest) (`waydroid-1.6.3-1.noarch.rpm`,
-   `waydroid-gbinder-config-hybris-1.6.3-1.noarch.rpm` and
-   `droid-config-pdx246-waydroid-<version>.aarch64.rpm`), for example with the browser into
-   Downloads, and install them from that folder together with the app:
+2. Download the port's four Waydroid packages from the
+   [release](https://github.com/sailfishos-sony-pdx246/main/releases/latest)
+   (`waydroid-1.6.3-6.noarch.rpm`, `waydroid-gbinder-config-hybris-1.6.3-6.noarch.rpm`,
+   `waydroid-runner-0.6.0-1.aarch64.rpm` and `droid-config-pdx246-waydroid-<version>.aarch64.rpm`),
+   for example with the browser into Downloads, and install them from that folder:
 
    ```sh
    cd /home/defaultuser/Downloads
-   zypper in --allow-unsigned-rpm ./waydroid-1.6.3-1.noarch.rpm \
-       ./waydroid-gbinder-config-hybris-1.6.3-1.noarch.rpm \
-       ./droid-config-pdx246-waydroid-*.aarch64.rpm waydroid-runner
+   zypper in --allow-unsigned-rpm ./waydroid-1.6.3-6.noarch.rpm \
+       ./waydroid-gbinder-config-hybris-1.6.3-6.noarch.rpm \
+       ./waydroid-runner-0.6.0-1.aarch64.rpm \
+       ./droid-config-pdx246-waydroid-*.aarch64.rpm
    ```
 
-   Use these instead of Chum's `waydroid`: they carry the fixes for this phone's Android 16 vendor
-   and binder devices, and droid-config-pdx246-waydroid sets the phone up for them.
+   Use these instead of Chum's `waydroid` and `waydroid-runner`: they carry the fixes for this
+   phone's Android 16 vendor and binder devices and the features above, and
+   droid-config-pdx246-waydroid sets the phone up for them.
 
 3. Download the Android images, about 950 MB, and unpack them where Waydroid looks for
    preinstalled images (unpacking needs about 3 GB free in /home). `waydroid init` cannot
    download images for this phone itself: there is no vendor image channel for it. These are the
-   images the port is tested with, LineageOS 20 of 2026-09-27:
+   images the port is tested with, LineageOS 20's system of 2026-09-27 and vendor of 2026-10-22:
 
    ```sh
    cd /home/waydroid-extra
    curl -L -o system.zip https://sourceforge.net/projects/waydroid/files/images/system/lineage/waydroid_arm64/lineage-20.0-20260927-VANILLA-waydroid_arm64-system.zip/download
-   curl -L -o vendor.zip https://sourceforge.net/projects/waydroid/files/images/vendor/waydroid_arm64/lineage-20.0-20260927-HALIUM_13-waydroid_arm64-vendor.zip/download
+   curl -L -o vendor.zip https://sourceforge.net/projects/waydroid/files/images/vendor/waydroid_arm64/lineage-20.0-20261022-HALIUM_13-waydroid_arm64-vendor.zip/download
    sha256sum system.zip vendor.zip
    ```
 
    The sums must be `5fb8179ed4455f45919c5a2bfbfdd1591619295994ad321217f03bb1dcfc53a7` for
-   system.zip and `b1dde0b0f97bb06812c952424925f61c17e73d91f54b0f7c77d272621d473a9e` for
+   system.zip and `2b1f35acc4b4536ce315464e482d0dbeb91a088f8e74ed7a9072924fac2694d1` for
    vendor.zip. Then:
 
    ```sh
@@ -204,13 +203,20 @@ All commands run in a root shell (`devel-su`, needs Developer mode).
    systemctl start waydroid-container
    ```
 
-5. Open **Waydroid** from the app grid. Android appears after about half a minute; if the app
-   closes before that, open it again. Install Android apps inside Android, for example F-Droid
-   from f-droid.org in Android's browser.
+5. Open **Waydroid** from the app grid. Android appears after about half a minute. Install
+   Android apps inside Android, for example F-Droid from f-droid.org in Android's browser.
+
+**Updating Waydroid** to a newer release's packages: close the Waydroid app, download the
+packages as in step 2 and install them the same way. The update stops Android if it is still
+running; open Waydroid again afterwards. A Waydroid set up with an earlier release's
+instructions gets the port's Waydroid app this way, in place of Chum's; if zypper asks before
+replacing Chum's waydroid-runner, choose the solution that installs the port's package. Its
+vendor image of 2026-09-27 can stay: the port's waydroid package fixes that image's slow starts.
 
 **If Android does not start:** `systemctl status waydroid-container` shows why the service refused
 to start (lines beginning with `pdx246-waydroid:`), and `waydroid log` shows Waydroid's log. Do not
-use `waydroid show-full-ui` or the waydroid-settings package: Android then gets no touch input.
+start Android with `waydroid show-full-ui` or install the waydroid-settings package: Android then
+appears in Sailfish OS's own window manager, where it gets no touch input.
 
 **Removing Waydroid:** `zypper rm --clean-deps waydroid` removes it with the app, the port's
 Waydroid packages and the dependencies installed for them. Android's system and data stay in

@@ -8,7 +8,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.1.0.11 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** second release (2026-10-24), with Android apps through Waydroid. Download the image from the
+**Status:** third release (2026-10-26), with Android apps through Waydroid. Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
 [INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)). Android apps run
 with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
@@ -26,12 +26,15 @@ Tested on the developer's phone (XQ-ES54):
 - GNSS, NFC (tag and card detection), fingerprint unlock
 - USB: MTP, developer mode, charging only, charging with the charging limit from Settings
 - Standby (about 10 mA overnight)
-- Android apps with Waydroid: graphics with the GPU, touch, network, audio and video
+- Android apps with Waydroid: graphics with the GPU, touch, network, audio and video; Android
+  keeps running in the background, the Android apps you install start from the app grid, and
+  their notifications appear in Sailfish OS
 
 ## Known issues
 
-- Waydroid: Android runs only while the Waydroid app is open, Android apps do not appear in the
-  app grid, and their notifications do not reach Sailfish OS.
+- Waydroid: notifications of Android apps' running services stay in Android (a ringing alarm or
+  timer, a music app's controls). The tested Android images have no Google services; apps that
+  depend on them may not work.
 - The call screen does not group merged calls into a conference (no participant list); "End
   call" ends the whole conference. This comes from Sailfish OS's call handling, not from the
   port.
@@ -53,7 +56,7 @@ All in [github.com/sailfishos-sony-pdx246](https://github.com/sailfishos-sony-pd
 | `droid-hal-version-pdx246` | image version package |
 | `droid-hal-img-boot-pdx246` | boot and recovery image package |
 | `android_device_sony_pdx246`, `android_kernel_sony_sm6450` | the LineageOS port's device tree and kernel with the Sailfish OS changes (branch `hybris-23.2`) |
-| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid` | middleware with this port's fixes (branches `pdx246-*`) |
+| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid`, `waydroid-runner` | middleware with this port's fixes (branches `pdx246-*`) |
 
 ## Licences
 
