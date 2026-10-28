@@ -25,7 +25,8 @@ Tested on the developer's phone (XQ-ES54):
   playback in Gallery and the browser
 - GNSS, NFC (tag and card detection), fingerprint unlock
 - USB: MTP, developer mode, charging only, charging with the charging limit from Settings
-- Standby (about 10 mA overnight)
+- Standby (10-12.5 mA overnight, depending on how long Sailfish OS keeps scanning for Wi-Fi
+  networks)
 - Android apps with Waydroid: graphics with the GPU, touch, network, audio and video; Android
   keeps running in the background, the Android apps you install start from the app grid, and
   their notifications appear in Sailfish OS
