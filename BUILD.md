@@ -193,6 +193,7 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
 | `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (721839f; patches in `rpm/`) | Android apps (not in the image) |
 | `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (b2134b5) | Android's window; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
+| `hybris/mw/pulseaudio-modules-droid` | mer-hybris/pulseaudio-modules-droid | pdx246-14.2.106 (bb45f1d) | PulseAudio crashed at every stop (with `unload_call_exit` in droid-configs) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
 And the adaptation repositories, at the paths the HADK scripts expect:
@@ -204,9 +205,8 @@ And the adaptation repositories, at the paths the HADK scripts expect:
 | `hybris/droid-hal-version-pdx246` | droid-hal-version-pdx246 | `droid-hal-version` = mer-hybris/droid-hal-version |
 
 `sailfish.xml` also pins the default middleware to the commits the port is tested with:
-pulseaudio-modules-droid 65edd31 (14.2.106), pulseaudio-modules-droid-hidl 818df80,
-mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin 31f4f65, sensorfw b889c3d,
-parse-android-dynparts 4e6f70f, community-adaptation 8afd975.
+pulseaudio-modules-droid-hidl 818df80, mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin
+31f4f65, sensorfw b889c3d, parse-android-dynparts 4e6f70f, community-adaptation 8afd975.
 
 Then, from the host (asks for the `sudo` password once, through `sdk-chroot`; the steps never
 prompt, so the run can be left alone: all packages in about 20 minutes, the image in about 7):
@@ -222,7 +222,7 @@ can be resumed with the remaining steps):
 |---|---|
 | `d` | droid-hal-pdx246 (packages the Android build output) |
 | `c` | droid-config-pdx246 and the adaptation patterns |
-| `pa` | pulseaudio-modules-droid at the pinned commit |
+| `pa` | checks out pulseaudio-modules-droid at the pinned commit (built by `mw`) |
 | `mw` | the default middleware set, including libhybris |
 | `dynparts`, `sensorfw`, `geoclue`, `imsqti`, `nfc`, `bthelper` | the middleware above |
 | `g` | droidmedia (from `external/droidmedia`) |
@@ -231,6 +231,7 @@ can be resumed with the remaining steps):
 | `i` | the image, with `mic` |
 | `waydroid` | Waydroid 1.6.3 with the port's patches (only when named; not in the image, see INSTALL.md section 8). mb2 skips `%prep`, so the step applies the spec's patches itself |
 | `runner` | waydroid-runner 0.6.0 with the background mode, app launching and the close setting (only when named; not in the image) |
+| `libhybris`, `padroid` | libhybris or pulseaudio-modules-droid alone (only when named; `mw` builds both) |
 
 The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.1.0.11-pdx246/Sailfish_OS-5.1.0.11-pdx246-<version>.zip`,
 with the `.packages` list and the kickstart next to it. `mic` can fail while

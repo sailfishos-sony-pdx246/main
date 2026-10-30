@@ -8,7 +8,7 @@
 # The tree is ANDROID_ROOT from ~/.hadk.env; logs go to $PDX246_LOG_DIR, by default to
 # build-logs/ next to the tree.
 # Steps, in order (default: all): d c pa mw dynparts sensorfw geoclue imsqti nfc bthelper g imgboot v i
-# Extra steps (not in the default list): libhybris, waydroid, runner
+# Extra steps (not in the default list): libhybris, padroid, waydroid, runner
 # Each step logs to pkg-<date>-<step>.log and the run stops at the first failure,
 # so it can be resumed by naming the remaining steps.
 # After d, always rebuild imgboot too: droid-hal-pdx246-img-boot requires the exact
@@ -56,11 +56,16 @@ for step in "$@"; do
 	# on a detached HEAD, and build_packages.sh's `git pull` fails there (and would move them off
 	# the pin). Step c builds community-adaptation first, so it needs -o too.
 	c) run c $BP -o -c ;;                   # droid-config-pdx246 (hybris/droid-configs)
-	pa)                                     # pulseaudio-modules-droid pinned to 14.2.106
+	# pulseaudio-modules-droid: the port's fork, branch pdx246-14.2.106 = 14.2.106 (65edd31) plus
+	# the hw module reference fix for output streams that fail to open (PulseAudio aborted at
+	# every stop), pinned as in sailfish.xml.
+	pa)
 		if [ ! -d hybris/mw/pulseaudio-modules-droid ]; then
-			run pa git clone --recurse-submodules https://github.com/mer-hybris/pulseaudio-modules-droid.git hybris/mw/pulseaudio-modules-droid
+			run pa git clone https://github.com/sailfishos-sony-pdx246/pulseaudio-modules-droid.git hybris/mw/pulseaudio-modules-droid
 		fi
-		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout 65edd31f62f22e2eec1f765608ca9c6ae5c4af7b ;;
+		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout bb45f1d69510132898cd735d327002c5f93be8cb ;;
+	# pulseaudio-modules-droid alone (the mw step also builds it).
+	padroid) run padroid $BP -o --mw=pulseaudio-modules-droid ;;
 	# The default middleware set (what a bare `build_packages.sh --mw` builds for Android 11 and
 	# later), one package at a time: with a bare --mw, build_packages.sh asks before each package
 	# ([Y/n/all]), and an unattended run stalls there (behind sudo's pty the read stops it).
