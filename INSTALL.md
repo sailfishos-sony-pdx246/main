@@ -76,8 +76,17 @@ partition names, flash logical partitions (`vendor_dlkm_a`) from fastbootd only,
 
 ## 3. First start
 
-- The first start takes longer than later ones. Then the setup asks for the language, the
-  date and time and a security code, and shows a short tutorial.
+- **The first start encrypts your data.** After the language and the terms of use, the phone
+  encrypts its user data partition (`/home`, LUKS); this takes only a few seconds. It needs a
+  charger or more than 30 % battery and waits for one otherwise. The setup then asks for a
+  **security code**, which cannot be skipped because it unlocks the encrypted data, and goes on
+  with the internet connection, the accounts and the fingerprint, and a short tutorial.
+- **Every start asks for the security code** on a keypad before Sailfish OS starts. Without input
+  the phone switches itself off after about five minutes. Wi-Fi connects only after the code.
+- **Choose a code you will remember, and preferably a long one.** A forgotten code cannot be
+  reset: the only way back is flashing again (section 4), which erases all data. The data key is
+  protected by the code alone, without a hardware-bound key, so someone with a copy of the
+  phone's storage could try short codes quickly.
 - **Mobile data, LTE and VoLTE** work only after you enable mobile data and choose the SIM
   for data (Settings, Mobile network). Calls over VoLTE need that too.
 - **Developer mode** (Settings, Developer tools) gives you a terminal and SSH.

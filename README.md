@@ -8,7 +8,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.1.0.11 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** third release (2026-10-26), with Android apps through Waydroid. Download the image from the
+**Status:** fourth release (2026-10-30): the user data is encrypted from the first start. Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
 [INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)). Android apps run
 with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
@@ -24,6 +24,8 @@ Tested on the developer's phone (XQ-ES54):
 - Cameras: back (including the ultrawide) and front, photos and videos with sound; video
   playback in Gallery and the browser
 - GNSS, NFC (tag and card detection), fingerprint unlock
+- Encrypted user data: the first start encrypts it, and every start asks for the security code
+  ([INSTALL.md](INSTALL.md), section 3)
 - USB: MTP, developer mode, charging only, charging with the charging limit from Settings
 - Standby (10-12.5 mA overnight, depending on how long Sailfish OS keeps scanning for Wi-Fi
   networks)
@@ -57,7 +59,7 @@ All in [github.com/sailfishos-sony-pdx246](https://github.com/sailfishos-sony-pd
 | `droid-hal-version-pdx246` | image version package |
 | `droid-hal-img-boot-pdx246` | boot and recovery image package |
 | `android_device_sony_pdx246`, `android_kernel_sony_sm6450` | the LineageOS port's device tree and kernel with the Sailfish OS changes (branch `hybris-23.2`) |
-| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid`, `waydroid-runner` | middleware with this port's fixes (branches `pdx246-*`) |
+| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid`, `waydroid-runner`, `pulseaudio-modules-droid` | middleware with this port's fixes (branches `pdx246-*`) |
 
 ## Licences
 
