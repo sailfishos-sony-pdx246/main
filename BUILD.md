@@ -5,12 +5,12 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Building Sailfish OS for the Sony Xperia 10 VI (pdx246)
 
-> **Tested end to end (2026-10-11/12).** A build from these repositories alone, in a new
+> **Tested end to end (2026-10-11/12, Sailfish OS 5.1.0.11).** A build from these repositories alone, in a new
 > directory with a freshly installed Platform SDK and build target, reproduced the developer's
 > image: the same 795 packages, Jolla's at identical versions and this port's at the same
 > commits. The port's repositories are at https://github.com/sailfishos-sony-pdx246.
 
-The port runs Sailfish OS 5.1.0.11 on top of the LineageOS 23.2 (Android 16 QPR2) port for the
+The port runs Sailfish OS 5.2.0.22 on top of the LineageOS 23.2 (Android 16 QPR2) port for the
 Xperia 10 VI (XQ-ES54, XQ-ES72; one build for both). It uses libhybris: the Android vendor
 blobs and a minimal Android system run underneath Sailfish OS.
 
@@ -48,7 +48,10 @@ Paths below: `$ANDROID_ROOT` is the Android tree; the SDKs see the host's `/` un
 
 ## 2. Platform SDK (once per host)
 
-Download the Sailfish OS 5.1.0.11 SDK parts (check the published checksums):
+Download the Sailfish OS 5.1.0.11 SDK parts (check the published checksums). Jolla has published
+no SDK target for 5.2 (checked 2026-11-01). Sailfish OS 5.2 keeps 5.1's base libraries, so the
+5.1.0.11 tooling and target build the port's packages, and the image step takes everything else
+from the 5.2.0.22 repositories (`RELEASE` below):
 
 - `https://releases.sailfishos.org/sdk/installers/latest/Jolla-latest-SailfishOS_Platform_SDK_Chroot-i486.tar.bz2`
 - `https://releases.sailfishos.org/sdk/targets/Sailfish_OS-5.1.0.11-Sailfish_SDK_Tooling-i486.tar.7z`
@@ -74,7 +77,7 @@ export VENDOR="sony"
 export DEVICE="pdx246"
 export HABUILD_DEVICE="pdx246"
 export PORT_ARCH="aarch64"
-export RELEASE="5.1.0.11"
+export RELEASE="5.2.0.22"
 export EXTRA_NAME=""
 ```
 
@@ -151,7 +154,7 @@ repo start hybris-23.2 external/droidmedia hybris/hybris-boot
 | `system/core` | regenerate the linker configuration after `enter_default_mount_ns` (Android 16 init) | to offer to mer-hybris |
 | `system/apex` | skip the SELinux context check of decompressed APEXes without SELinux | to offer to mer-hybris |
 | `frameworks/av` | expose the physical cameras of logical multi-cameras to camera API1 (ultrawide) | to offer to mer-hybris |
-| `external/droidmedia` | Halium's adaptation to LineageOS 23.2 (Android 16 QPR2); a revert of 81db5a7 that keeps the codec metadata layout of Sailfish OS 5.1's gst-droid; raw decoder output named by its real layout (Qualcomm's NV12 with 128-aligned rows), with the codec's stride and slice height kept in the output metadata, which fixes browser video whose width is not a multiple of 128 | revert to be dropped once Jolla ships a matching gst-droid; the layout fix to offer to sailfishos/droidmedia |
+| `external/droidmedia` | Halium's adaptation to LineageOS 23.2 (Android 16 QPR2); a revert of 81db5a7 that keeps the codec metadata layout that gst-droid and gecko-camera-droid-plugin in Sailfish OS 5.1 and 5.2 were built with (droidmedia-devel 0.20260522.0); raw decoder output named by its real layout (Qualcomm's NV12 with 128-aligned rows), with the codec's stride and slice height kept in the output metadata, which fixes browser video whose width is not a multiple of 128 | revert to be dropped once Jolla ships a matching gst-droid; the layout fix to offer to sailfishos/droidmedia |
 | `hybris/hybris-boot` | pdx246 entry in `fixup-mountpoints`; init-script switches the USB controller to peripheral mode when the UDC is missing | to offer to mer-hybris |
 
 **libhybris:** `make hybris-hal` builds libhybris' compatibility layers from
@@ -189,11 +192,11 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/ofono-binder-plugin-ext-qti` | rinigus/ofono-binder-plugin-ext-qti (AIDL) | pdx246-0.1.1-aidl (e912b7c) | VoLTE ringback, conference, request fixes |
 | `hybris/mw/geoclue-providers-hybris` | mer-hybris/geoclue-providers-hybris | pdx246-0.3.1 (6ba81f2) | GNSS on AIDL V1 vendors |
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
-| `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.0 (a9598eb) | NFC core initialisation |
+| `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.1 (9be7676) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
 | `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (721839f; patches in `rpm/`) | Android apps (not in the image) |
 | `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (b2134b5) | Android's window; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
-| `hybris/mw/pulseaudio-modules-droid` | mer-hybris/pulseaudio-modules-droid | pdx246-14.2.106 (bb45f1d) | PulseAudio crashed at every stop (with `unload_call_exit` in droid-configs) |
+| `hybris/mw/pulseaudio-modules-droid` | mer-hybris/pulseaudio-modules-droid | pdx246-14.2.110 (bfe2cf3; 14.2.110 is the version in Sailfish OS 5.2.0.22) | PulseAudio crashed at every stop (with `unload_call_exit` in droid-configs) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
 And the adaptation repositories, at the paths the HADK scripts expect:
@@ -206,7 +209,9 @@ And the adaptation repositories, at the paths the HADK scripts expect:
 
 `sailfish.xml` also pins the default middleware to the commits the port is tested with:
 pulseaudio-modules-droid-hidl 818df80, mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin
-31f4f65, sensorfw b889c3d, parse-android-dynparts 4e6f70f, community-adaptation 8afd975.
+31f4f65, parse-android-dynparts 4e6f70f, community-adaptation 8afd975. sensorfw's binder backend
+for AIDL sensors (hybris-libsensorfw-qt5-binder 0.15.2) comes from Jolla's adaptation-common
+repository since 5.2; for 5.1 the port built it from source.
 
 Then, from the host (asks for the `sudo` password once, through `sdk-chroot`; the steps never
 prompt, so the run can be left alone: all packages in about 20 minutes, the image in about 7):
@@ -224,7 +229,7 @@ can be resumed with the remaining steps):
 | `c` | droid-config-pdx246 and the adaptation patterns |
 | `pa` | checks out pulseaudio-modules-droid at the pinned commit (built by `mw`) |
 | `mw` | the default middleware set, including libhybris |
-| `dynparts`, `sensorfw`, `geoclue`, `imsqti`, `nfc`, `bthelper` | the middleware above |
+| `dynparts`, `geoclue`, `imsqti`, `nfc`, `bthelper` | the middleware above |
 | `g` | droidmedia (from `external/droidmedia`) |
 | `imgboot` | droid-hal-pdx246-img-boot (always after `d`: it requires the exact version of the dtbo package) |
 | `v` | droid-hal-version-pdx246 |
@@ -233,7 +238,7 @@ can be resumed with the remaining steps):
 | `runner` | waydroid-runner 0.6.0 with the background mode, app launching and the close setting (only when named; not in the image) |
 | `libhybris`, `padroid` | libhybris or pulseaudio-modules-droid alone (only when named; `mw` builds both) |
 
-The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.1.0.11-pdx246/Sailfish_OS-5.1.0.11-pdx246-<version>.zip`,
+The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.2.0.22-pdx246/Sailfish_OS-5.2.0.22-pdx246-<version>.zip`,
 with the `.packages` list and the kickstart next to it. `mic` can fail while
 `build_packages.sh -i` still exits 0; the script checks the log for that.
 

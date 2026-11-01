@@ -7,7 +7,7 @@
 #   $PLATFORM_SDK_ROOT/sdks/sfossdk/sdk-chroot bash /parentroot<this repo>/scripts/build-packages-sdk.sh [step...]
 # The tree is ANDROID_ROOT from ~/.hadk.env; logs go to $PDX246_LOG_DIR, by default to
 # build-logs/ next to the tree.
-# Steps, in order (default: all): d c pa mw dynparts sensorfw geoclue imsqti nfc bthelper g imgboot v i
+# Steps, in order (default: all): d c pa mw dynparts geoclue imsqti nfc bthelper g imgboot v i
 # Extra steps (not in the default list): libhybris, padroid, waydroid, runner
 # Each step logs to pkg-<date>-<step>.log and the run stops at the first failure,
 # so it can be resumed by naming the remaining steps.
@@ -20,7 +20,7 @@ LOGDIR=${PDX246_LOG_DIR:-$(dirname "$ANDROID_ROOT")/build-logs}
 BP=rpm/dhd/helpers/build_packages.sh
 cd "$ANDROID_ROOT" || { echo "no ANDROID_ROOT $ANDROID_ROOT"; exit 1; }
 mkdir -p "$LOGDIR" || { echo "cannot create $LOGDIR"; exit 1; }
-[ "$#" -gt 0 ] || set -- d c pa mw dynparts sensorfw geoclue imsqti nfc bthelper g imgboot v i
+[ "$#" -gt 0 ] || set -- d c pa mw dynparts geoclue imsqti nfc bthelper g imgboot v i
 
 run() {
 	local step=$1; shift
@@ -56,14 +56,14 @@ for step in "$@"; do
 	# on a detached HEAD, and build_packages.sh's `git pull` fails there (and would move them off
 	# the pin). Step c builds community-adaptation first, so it needs -o too.
 	c) run c $BP -o -c ;;                   # droid-config-pdx246 (hybris/droid-configs)
-	# pulseaudio-modules-droid: the port's fork, branch pdx246-14.2.106 = 14.2.106 (65edd31) plus
-	# the hw module reference fix for output streams that fail to open (PulseAudio aborted at
-	# every stop), pinned as in sailfish.xml.
+	# pulseaudio-modules-droid: the port's fork, branch pdx246-14.2.110 = 14.2.110 (7ca34de, the
+	# version in Sailfish OS 5.2.0.22) plus the hw module reference fix for output streams that
+	# fail to open (PulseAudio aborted at every stop), pinned as in sailfish.xml.
 	pa)
 		if [ ! -d hybris/mw/pulseaudio-modules-droid ]; then
 			run pa git clone https://github.com/sailfishos-sony-pdx246/pulseaudio-modules-droid.git hybris/mw/pulseaudio-modules-droid
 		fi
-		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout bb45f1d69510132898cd735d327002c5f93be8cb ;;
+		run pa-checkout git -C hybris/mw/pulseaudio-modules-droid checkout bfe2cf3e671f393e612e9c322cc15a5057346cda ;;
 	# pulseaudio-modules-droid alone (the mw step also builds it).
 	padroid) run padroid $BP -o --mw=pulseaudio-modules-droid ;;
 	# The default middleware set (what a bare `build_packages.sh --mw` builds for Android 11 and
@@ -74,7 +74,6 @@ for step in "$@"; do
 	        run mw-$p $BP -o --mw=$p
 	    done ;;
 	dynparts) run dynparts $BP -o --mw=https://github.com/sailfish-on-nabu/parse-android-dynparts ;;
-	sensorfw) run sensorfw $BP -o --mw=https://github.com/sailfishos/sensorfw --spec=rpm/sensorfw-qt5-binder.spec ;;
 	# geoclue-providers-hybris: the port's branch in hybris/mw, pdx246-0.3.1 (0.3.1 plus the
 	# AIDL interface-version check); offline so build_packages does not git pull it.
 	geoclue) run geoclue $BP -o --mw=geoclue-providers-hybris --spec=rpm/geoclue-providers-hybris-binder.spec ;;
@@ -82,7 +81,7 @@ for step in "$@"; do
 	# port's fixes, branch pdx246-0.1.1-aidl (on tag 0.1.1+aidl, f5bbe27).
 	imsqti) run imsqti $BP -o --mw=ofono-binder-plugin-ext-qti --spec=rpm/ofono-binder-plugin-ext-qti.spec ;;
 	# NFC: mer-hybris/libncicore (branch pdx246-1.2.0: passive-only reader polling)
-	# and nfcd-binder-plugin (branch pdx246-1.2.0: CORE_INIT_RSP for HIDL coreInitialized).
+	# and nfcd-binder-plugin (branch pdx246-1.2.1: CORE_INIT_RSP for HIDL coreInitialized).
 	# libncicore first, the plugin links against it. build_packages.sh builds with mb2
 	# --no-check, so libncicore's unit tests run separately in the target (sb2, qemu).
 	nfc) run nfc-libncicore $BP -o --mw=libncicore --spec=rpm/libncicore.spec
