@@ -39,7 +39,7 @@ boot chain of slot a. This is an unofficial community port, not affiliated with 
 
 ## 2. Flashing
 
-1. Extract the zip (`Sailfish_OS-5.1.0.11-pdx246-<version>.zip`) and enter the directory.
+1. Extract the zip (`Sailfish_OS-5.2.0.22-pdx246-<version>.zip`) and enter the directory.
 2. Power the phone off, then hold **volume up** while plugging in the USB cable: the bootloader's
    fastboot mode. Check that `fastboot devices` lists the phone.
 3. Run:
@@ -161,7 +161,7 @@ All commands run in a root shell (`devel-su`, needs Developer mode).
    dnsmasq:
 
    ```sh
-   ssu ar sailfishos-chum https://repo.sailfishos.org/obs/sailfishos:/chum/5.1_aarch64/
+   ssu ar sailfishos-chum https://repo.sailfishos.org/obs/sailfishos:/chum/5.2_aarch64/
    zypper ref
    ```
 
