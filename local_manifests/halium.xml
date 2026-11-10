@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Audio compat layer (audio.hidl_compat.default) for Sailfish's pulseaudio-modules-droid.
+<!-- SPDX-FileCopyrightText: Johannes Meyer zum Alten Borgloh
+     SPDX-License-Identifier: BSD-3-Clause
+
+     Audio compat layer (audio.hidl_compat.default) for Sailfish's pulseaudio-modules-droid.
      mlehtima's fork, used by the Xperia 10 IV/10 V ports, stops at halium-15.0; upstream Halium
      has halium-16.0 (0cc91ec, Matti Lehtimaki, 2026-07-15). Pinned by SHA. -->
 <manifest>
