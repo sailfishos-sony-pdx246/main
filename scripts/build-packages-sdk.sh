@@ -16,6 +16,14 @@
 # fail in step i ("nothing provides droid-hal-pdx246-kernel-dtbo = ...", 2026-10-06).
 set -uo pipefail
 source "$HOME/.hadk.env"
+# The Sailfish OS release this checkout is made for (its pins and steps). The image takes Jolla's
+# packages from RELEASE's repositories, so ~/.hadk.env must name this one. Keep it equal to
+# RELEASE in install-sdks.sh.
+PORT_RELEASE=5.2.0.22
+[ "${RELEASE:-}" = "$PORT_RELEASE" ] || {
+	echo "~/.hadk.env has RELEASE=\"${RELEASE:-}\", but this checkout builds $PORT_RELEASE: fix ~/.hadk.env (BUILD.md section 2)"
+	exit 1
+}
 LOGDIR=${PDX246_LOG_DIR:-$(dirname "$ANDROID_ROOT")/build-logs}
 BP=rpm/dhd/helpers/build_packages.sh
 cd "$ANDROID_ROOT" || { echo "no ANDROID_ROOT $ANDROID_ROOT"; exit 1; }

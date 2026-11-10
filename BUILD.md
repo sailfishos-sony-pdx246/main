@@ -43,8 +43,22 @@ Everything else in Sailfish OS comes prebuilt from Jolla's repositories.
 - **The phone:** unlocked bootloader, and the LineageOS 23.2 release this port is pinned to
   installed first (the vendor partitions come from it); see `INSTALL.md`.
 
-Paths below: `$ANDROID_ROOT` is the Android tree; the SDKs see the host's `/` under
-`/parentroot`, so inside the SDK the same tree is `/parentroot$ANDROID_ROOT`.
+**This repository** holds the scripts and manifests that the steps below use. Clone it and check
+out what you want to build: a release tag (see
+[releases](https://github.com/sailfishos-sony-pdx246/main/releases)) pins every repository of
+the port to that release's commits; the `main` branch has the newest state, which can be ahead
+of the latest release.
+
+```sh
+git clone https://github.com/sailfishos-sony-pdx246/main.git
+git -C main checkout v5.2.0.22-20261101
+```
+
+The tag `v5.2.0.22-20261101` still has an `install-sdks.sh` that writes `RELEASE="5.1.0.11"`
+into `~/.hadk.env` (section 2): after running it, set `RELEASE="5.2.0.22"` in that file.
+
+Paths below: `<main>` is this checkout and `$ANDROID_ROOT` the Android tree; the SDKs see the
+host's `/` under `/parentroot`, so inside the SDK the same tree is `/parentroot$ANDROID_ROOT`.
 
 ## 2. Platform SDK (once per host)
 
@@ -59,7 +73,8 @@ from the 5.2.0.22 repositories (`RELEASE` below):
 - `https://releases.sailfishos.org/ubu/ubuntu-focal-20210531-android-rootfs.tar.bz2` (only if you
   build the Android half in Jolla's Ubuntu chroot; see section 4)
 
-`scripts/install-sdks.sh <download dir> <android tree>` does the rest (about 2 minutes):
+`scripts/install-sdks.sh <download dir> <android tree>` does the rest (about 2 minutes). It
+creates the tree's folder if it does not exist yet (section 3 fills it), then:
 
 1. Unpack the Platform SDK to `/srv/sailfishos/sdks/sfossdk` (`sudo tar --numeric-owner -p -xjf`).
 2. Inside it (`/srv/sailfishos/sdks/sfossdk/sdk-chroot`): `sudo zypper ref` (an error for
@@ -69,7 +84,8 @@ from the 5.2.0.22 repositories (`RELEASE` below):
    `sdk-assistant target create --tooling SailfishOS-5.1.0.11 sony-pdx246-aarch64 <target .tar.7z>`.
 4. Optional: unpack the Ubuntu rootfs to `/srv/sailfishos/sdks/ubuntu`.
 
-Then create `~/.hadk.env` (read by the build scripts and the SDK):
+It also writes `~/.hadk.env`, which the build scripts and the SDK read. Its `RELEASE` is the
+Sailfish OS release the image is built for, not the SDK's version:
 
 ```sh
 export ANDROID_ROOT="/parentroot<your tree>"   # as the SDK sees it
@@ -81,8 +97,14 @@ export RELEASE="5.2.0.22"
 export EXTRA_NAME=""
 ```
 
-If your shell enables ccache for LineageOS builds (`USE_CCACHE`, `CCACHE_EXEC`), unset both in
-`~/.mersdkubu.profile`: the Ubuntu chroot has no ccache.
+An existing `~/.hadk.env` is left as it is, with a warning if its `RELEASE` or `ANDROID_ROOT`
+differ from these: edit it then. `build-packages-sdk.sh` stops if `RELEASE` is not the release
+this checkout builds.
+
+The script also writes `~/.mersdkubu.profile` for the Ubuntu chroot and adds a `sfossdk` alias
+(enters the Platform SDK) to `~/.bashrc`. The profile unsets the ccache variables of a LineageOS
+build setup (`USE_CCACHE`, `CCACHE_EXEC`), because the Ubuntu chroot has no ccache. A profile you
+already have is left as it is: add the `unset` to it yourself.
 
 ## 3. The Android tree
 
@@ -241,6 +263,13 @@ can be resumed with the remaining steps):
 The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.2.0.22-pdx246/Sailfish_OS-5.2.0.22-pdx246-<version>.zip`,
 with the `.packages` list and the kickstart next to it. `mic` can fail while
 `build_packages.sh -i` still exits 0; the script checks the log for that.
+
+The zip's flashing files come from `hybris/droid-configs`. `flash.sh` is the generic script of
+mer-hybris' droid-hal-configs (the submodule `droid-configs-device`, `sparse/boot/flash.sh`); the
+port's flashing steps are in `sparse/boot/flash-config.sh`, which `flash.sh` reads, and in
+`sparse/boot/flash-preflight.sh`, with `sparse/boot/flashing-README.txt`. They reach the zip
+through the droid-config-pdx246-out-of-image-files package and the kickstart's pack script
+(`kickstart/pack/pdx246/hybris`).
 
 ## 6. Rebuilding single packages
 

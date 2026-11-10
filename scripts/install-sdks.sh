@@ -11,16 +11,21 @@
 set -euo pipefail
 
 D=$(cd "${1:?usage: $0 <download dir> <android tree>}" && pwd)
-TREE=$(cd "${2:?usage: $0 <download dir> <android tree>}" && pwd)
-RELEASE=5.1.0.11
+TREE_ARG=${2:?usage: $0 <download dir> <android tree>}
+# The SDK tooling and target. Jolla has published none for 5.2 (checked 2026-11-01); 5.2 keeps
+# 5.1's base libraries, so the 5.1.0.11 SDK builds the port's packages.
+SDK_RELEASE=5.1.0.11
+# The Sailfish OS release the image is built for (RELEASE in ~/.hadk.env): the image step takes
+# Jolla's packages from its repositories. Keep it equal to PORT_RELEASE in build-packages-sdk.sh.
+RELEASE=5.2.0.22
 export PLATFORM_SDK_ROOT=${PLATFORM_SDK_ROOT:-/srv/sailfishos}
 SDK=$PLATFORM_SDK_ROOT/sdks/sfossdk
 UBU=$PLATFORM_SDK_ROOT/sdks/ubuntu
-TOOLING=SailfishOS-$RELEASE
+TOOLING=SailfishOS-$SDK_RELEASE
 TARGET=sony-pdx246-aarch64
 CHROOT_TAR=$D/Jolla-latest-SailfishOS_Platform_SDK_Chroot-i486.tar.bz2
-TOOLING_TAR=$D/Sailfish_OS-$RELEASE-Sailfish_SDK_Tooling-i486.tar.7z
-TARGET_TAR=$D/Sailfish_OS-$RELEASE-Sailfish_SDK_Target-aarch64.tar.7z
+TOOLING_TAR=$D/Sailfish_OS-$SDK_RELEASE-Sailfish_SDK_Tooling-i486.tar.7z
+TARGET_TAR=$D/Sailfish_OS-$SDK_RELEASE-Sailfish_SDK_Target-aarch64.tar.7z
 UBU_TAR=$D/ubuntu-focal-20210531-android-rootfs.tar.bz2
 
 step() { printf '\n=== %s\n' "$*"; }
@@ -32,6 +37,10 @@ if findmnt -no OPTIONS -T "$(dirname "$PLATFORM_SDK_ROOT")" | grep -qE '(^|,)(no
 	echo "$PLATFORM_SDK_ROOT is on a nosuid/nodev filesystem; sudo and mic fail there" >&2
 	exit 1
 fi
+# The tree itself is synced later (BUILD.md section 3); its folder is needed now, because
+# ~/.hadk.env names it.
+mkdir -p "$TREE_ARG"
+TREE=$(cd "$TREE_ARG" && pwd)
 
 step "user config: ~/.hadk.env, ~/.mersdkubu.profile, ~/.bashrc"
 if [ ! -e ~/.hadk.env ]; then
@@ -43,11 +52,19 @@ export VENDOR="sony"
 export DEVICE="pdx246"
 export HABUILD_DEVICE="pdx246"
 export PORT_ARCH="aarch64"
+# The Sailfish OS release the image is built for; the SDK tooling and target can be older
+# (BUILD.md section 2).
 export RELEASE="$RELEASE"
 export EXTRA_NAME=""
 EOF
 else
 	echo "~/.hadk.env exists, left as it is"
+	# One from an earlier release or for another tree would build the wrong image.
+	old=$(set +u; unset RELEASE ANDROID_ROOT; . ~/.hadk.env >/dev/null 2>&1; echo "${RELEASE:-}|${ANDROID_ROOT:-}")
+	[ "${old%%|*}" = "$RELEASE" ] ||
+		echo "WARNING: its RELEASE is \"${old%%|*}\", this checkout builds $RELEASE: edit ~/.hadk.env" >&2
+	[ "${old#*|}" = "/parentroot$TREE" ] ||
+		echo "WARNING: its ANDROID_ROOT is \"${old#*|}\", not \"/parentroot$TREE\": edit ~/.hadk.env" >&2
 fi
 if [ ! -e ~/.mersdkubu.profile ]; then
 	cat >~/.mersdkubu.profile <<'EOF'
