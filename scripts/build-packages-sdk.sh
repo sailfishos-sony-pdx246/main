@@ -75,10 +75,11 @@ for step in "$@"; do
 	# pulseaudio-modules-droid alone (the mw step also builds it).
 	padroid) run padroid $BP -o --mw=pulseaudio-modules-droid ;;
 	# The default middleware set (what a bare `build_packages.sh --mw` builds for Android 11 and
-	# later), one package at a time: with a bare --mw, build_packages.sh asks before each package
+	# later) without mce-plugin-libhybris (only mce's LED backends; the phone has no notification
+	# LED), one package at a time: with a bare --mw, build_packages.sh asks before each package
 	# ([Y/n/all]), and an unattended run stalls there (behind sudo's pty the read stops it).
 	mw) for p in libhybris pulseaudio-modules-droid pulseaudio-modules-droid-hidl \
-	        mce-plugin-libhybris qt5-qpa-hwcomposer-plugin; do
+	        qt5-qpa-hwcomposer-plugin; do
 	        run mw-$p $BP -o --mw=$p
 	    done ;;
 	dynparts) run dynparts $BP -o --mw=https://github.com/sailfish-on-nabu/parse-android-dynparts ;;

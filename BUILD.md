@@ -230,8 +230,8 @@ And the adaptation repositories, at the paths the HADK scripts expect:
 | `hybris/droid-hal-version-pdx246` | droid-hal-version-pdx246 | `droid-hal-version` = mer-hybris/droid-hal-version |
 
 `sailfish.xml` also pins the default middleware to the commits the port is tested with:
-pulseaudio-modules-droid-hidl 818df80, mce-plugin-libhybris 2c48a3f, qt5-qpa-hwcomposer-plugin
-31f4f65, parse-android-dynparts 4e6f70f, community-adaptation 8afd975. sensorfw's binder backend
+pulseaudio-modules-droid-hidl 818df80, qt5-qpa-hwcomposer-plugin 31f4f65, parse-android-dynparts
+4e6f70f, community-adaptation 8afd975. sensorfw's binder backend
 for AIDL sensors (hybris-libsensorfw-qt5-binder 0.15.2) comes from Jolla's adaptation-common
 repository since 5.2; for 5.1 the port built it from source.
 
@@ -250,7 +250,7 @@ can be resumed with the remaining steps):
 | `d` | droid-hal-pdx246 (packages the Android build output) |
 | `c` | droid-config-pdx246 and the adaptation patterns |
 | `pa` | checks out pulseaudio-modules-droid at the pinned commit (built by `mw`) |
-| `mw` | the default middleware set, including libhybris |
+| `mw` | the default middleware set, including libhybris, without mce-plugin-libhybris (only LED backends; the phone has no notification LED) |
 | `dynparts`, `geoclue`, `imsqti`, `nfc`, `bthelper` | the middleware above |
 | `g` | droidmedia (from `external/droidmedia`) |
 | `imgboot` | droid-hal-pdx246-img-boot (always after `d`: it requires the exact version of the dtbo package) |
