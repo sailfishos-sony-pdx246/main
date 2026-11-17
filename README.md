@@ -10,8 +10,9 @@ with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone
 
 **Status:** fifth release (2026-11-01): Sailfish OS 5.2.0.22, with the new browser engine. Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
-[INSTALL.md](INSTALL.md) describes, or build it yourself ([BUILD.md](BUILD.md)). Android apps run
-with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
+[INSTALL.md](INSTALL.md) describes, or from Chrome, Edge or Brave with the
+[web installer](https://sailfishos-sony-pdx246.github.io/web-installer/) (new), or build it yourself ([BUILD.md](BUILD.md)).
+Android apps run with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
 
 ## What works
 
@@ -59,6 +60,7 @@ All in [github.com/sailfishos-sony-pdx246](https://github.com/sailfishos-sony-pd
 | Repository | What |
 |---|---|
 | `main` (this one) | build instructions, local manifests, platform patches, build scripts |
+| `web-installer` | the [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/): flashing from the browser over WebUSB |
 | `droid-hal-pdx246` | droid-hal packaging (`rpm/` in the tree) |
 | `droid-config-pdx246` | configuration, patterns and kickstart |
 | `droid-hal-version-pdx246` | image version package |

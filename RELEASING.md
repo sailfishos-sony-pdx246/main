@@ -58,6 +58,10 @@ describes (a fresh install, not a phone updated package by package), and check:
 - standby overnight (current and time suspended) and a reboot;
 - Waydroid, installed from the release's packages as INSTALL.md section 8 describes.
 
+If `flash-config.sh` changed, also run the new zip through the
+[web installer](https://github.com/sailfishos-sony-pdx246/web-installer) against its simulated
+phone (`?mock=1`, see its README): it refuses operations it does not know.
+
 Fix what fails, or list it in the known issues.
 
 ## 4. Publish
@@ -79,3 +83,7 @@ Fix what fails, or list it in the known issues.
    `gh api repos/sailfishos-sony-pdx246/main/releases/<id> --jq '.assets[] | "\(.digest) \(.name)"'`.
 7. Publish the draft as the latest release:
    `gh api -X PATCH repos/sailfishos-sony-pdx246/main/releases/<id> -F draft=false -f make_latest=true`.
+8. Add the release to the web installer: its tag, image file name, size and SHA-256 in `releases`
+   in `js/device-pdx246.js` of `web-installer` (a new LineageOS base also needs its image sums
+   under `lineage`), and push; GitHub Pages publishes it within a minute. Until then the page
+   warns that the image is unknown.

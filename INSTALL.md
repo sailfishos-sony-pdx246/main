@@ -39,6 +39,11 @@ boot chain of slot a. This is an unofficial community port, not affiliated with 
 
 ## 2. Flashing
 
+**From the browser:** the [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/) does what the steps below do, and
+sections 4 and 5 as well, from Chrome, Edge or Brave over USB. It reads the zip as downloaded
+and checks it before it writes anything, and it says what Linux or Windows may need first. It
+is new and has been tested on one phone so far: `flash.sh` remains the reference.
+
 1. Extract the zip (`Sailfish_OS-5.2.0.22-pdx246-<version>.zip`) and enter the directory.
 2. Power the phone off, then hold **volume up** while plugging in the USB cable: the bootloader's
    fastboot mode. Check that `fastboot devices` lists the phone.
