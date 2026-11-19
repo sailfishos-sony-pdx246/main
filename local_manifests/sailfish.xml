@@ -11,8 +11,8 @@
      waydroid is sailfishos-open's packaging: upstream 1.6.3 as submodule (waydroid/waydroid at
      the tag), the port's patches in rpm/; not in the image (build-packages-sdk.sh step waydroid).
      waydroid-runner is sailfishos-open's runner with the port's background mode (Android keeps
-     running when its window is closed, a setting can make closing stop it) and Android apps'
-     launchers; not in the image either (step runner). -->
+     running when its window is closed, a setting can make closing stop it), Android apps'
+     launchers and Android's setup at the first start; not in the image either (step runner). -->
 <manifest>
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
@@ -20,7 +20,7 @@
   <project path="rpm" name="droid-hal-pdx246" remote="pdx246"
            revision="40ff590cfee41fc983192c20001e34057834363f" upstream="main" sync-s="true" />
   <project path="hybris/droid-configs" name="droid-config-pdx246" remote="pdx246"
-           revision="1ebaf06bd9c4e6360f12881ba42f62121893e89a" upstream="main" sync-s="true" />
+           revision="ede8c5fcda301c6abb0b1be9c04ad1cf0b4fe59f" upstream="main" sync-s="true" />
   <project path="hybris/droid-hal-version-pdx246" name="droid-hal-version-pdx246" remote="pdx246"
            revision="274681e627f35fcca766efb670fb01eb97c832da" upstream="main" sync-s="true" />
   <project path="hybris/mw/droid-hal-img-boot-pdx246" name="droid-hal-img-boot-pdx246" remote="pdx246"
@@ -40,9 +40,9 @@
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
-           revision="721839f3b0b4111999ad9e14bf2af719d99e92ef" upstream="pdx246-1.6.3" sync-s="true" />
+           revision="78042d69b971658bf1950c727f9ac2704856269d" upstream="pdx246-1.6.3" sync-s="true" />
   <project path="hybris/mw/waydroid-runner" name="waydroid-runner" remote="pdx246"
-           revision="b2134b5c56eb8bf53d5a9cb2f0a0790536d30b34" upstream="pdx246-0.3.1" />
+           revision="8cfec95fe9be5b3ba4ae3300e3b46a6f33ae5d73" upstream="pdx246-0.3.1" />
   <project path="hybris/mw/pulseaudio-modules-droid" name="pulseaudio-modules-droid" remote="pdx246"
            revision="bfe2cf3e671f393e612e9c322cc15a5057346cda" upstream="pdx246-14.2.110" />
 

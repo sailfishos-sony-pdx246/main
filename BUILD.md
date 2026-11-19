@@ -216,8 +216,8 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
 | `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.1 (9be7676) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
-| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (721839f; patches in `rpm/`) | Android apps (not in the image) |
-| `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (b2134b5) | Android's window; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
+| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (78042d6; patches in `rpm/`) | Android apps (not in the image) |
+| `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (8cfec95) | Android's window; sets Android up at the first start; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
 | `hybris/mw/pulseaudio-modules-droid` | mer-hybris/pulseaudio-modules-droid | pdx246-14.2.110 (bfe2cf3; 14.2.110 is the version in Sailfish OS 5.2.0.22) | PulseAudio crashed at every stop (with `unload_call_exit` in droid-configs) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
@@ -257,7 +257,7 @@ can be resumed with the remaining steps):
 | `v` | droid-hal-version-pdx246 |
 | `i` | the image, with `mic` |
 | `waydroid` | Waydroid 1.6.3 with the port's patches (only when named; not in the image, see INSTALL.md section 8). mb2 skips `%prep`, so the step applies the spec's patches itself |
-| `runner` | waydroid-runner 0.6.0 with the background mode, app launching and the close setting (only when named; not in the image) |
+| `runner` | waydroid-runner 0.7.1 with the background mode, app launching, the close setting and Android's setup at the first start (only when named; not in the image) |
 | `libhybris`, `padroid` | libhybris or pulseaudio-modules-droid alone (only when named; `mw` builds both) |
 
 The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.2.0.22-pdx246/Sailfish_OS-5.2.0.22-pdx246-<version>.zip`,
