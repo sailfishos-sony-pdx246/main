@@ -84,6 +84,7 @@ Fix what fails, or list it in the known issues.
 7. Publish the draft as the latest release:
    `gh api -X PATCH repos/sailfishos-sony-pdx246/main/releases/<id> -F draft=false -f make_latest=true`.
 8. Add the release to the web installer: its tag, image file name, size and SHA-256 in `releases`
-   in `js/device-pdx246.js` of `web-installer` (a new LineageOS base also needs its image sums
-   under `lineage`), and push; GitHub Pages publishes it within a minute. Until then the page
-   warns that the image is unknown.
+   in `js/device-pdx246.js` of `web-installer`, and push; GitHub Pages publishes it within a
+   minute. Until then the page warns that the image is unknown. A new LineageOS base also needs
+   its tag and its image sums under `lineage`, and its OTA zip's name, size and SHA-256 under
+   `lineage.zips`, which the option "Install Sailfish OS from Sony's Android" installs from.

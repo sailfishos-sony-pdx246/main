@@ -12,10 +12,43 @@ Download the image zip and its `SHA256SUMS` from the
 **Flashing erases the userdata partition** (all Android data, apps and files) and replaces the
 boot chain of slot a. This is an unofficial community port, not affiliated with Jolla or Sony.
 
+There are two ways to install it:
+
+- **In the browser:** the [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/)
+  installs from Chrome, Edge or Brave over USB, with no fastboot on the computer. It reads the
+  zips as downloaded, checks them before it writes anything, and says what Linux or Windows may
+  need first.
+  - On a phone that still runs Sony's Android, choose **Install Sailfish OS from Sony's
+    Android**. It also does what section 1 asks for: it unlocks the bootloader with Sony's
+    unlock code, writes LineageOS 23.2 to slot a straight from its OTA zip, and then installs
+    Sailfish OS.
+  - Before that, install Sony's newest software update (Sony offers none once the bootloader is
+    unlocked), turn on OEM unlocking in the Developer options, and get the unlock code for the
+    phone's IMEI 1 from
+    [Sony's unlock page](https://opendevices.sony.net/aosp-on-xperia-open-devices/get-started/unlock-bootloader/).
+    Unlocking erases the phone and removes Sony's DRM keys for good.
+  - Besides the image zip, the page needs the LineageOS OTA zip
+    `lineage-23.2-20260924-UNOFFICIAL-pdx246.zip` from
+    [release v23.2-20260924](https://github.com/johanneszab/lineageos-pdx246-releases/releases/tag/v23.2-20260924).
+  - This option is new: it has run on a phone with Sailfish OS, not yet on one with Sony's
+    Android.
+  - The page's other options install over LineageOS, install again (section 4) and go back to
+    LineageOS (section 5).
+- **With the script or by hand:** sections 1 and 2. You unlock the bootloader and install
+  LineageOS yourself, then run `flash.sh` from the image zip or flash the images one by one.
+  `flash.sh` remains the reference, and the web installer follows it.
+
 ## 1. Before you start
 
-1. **Unlock the bootloader** with Sony's unlock procedure.
-2. **Install LineageOS 23.2 for pdx246 on slot a,** complete with its super partition
+1. **Install Sony's newest software update** while the phone still runs Sony's Android.
+   LineageOS 23.2 needs Sony's firmware 70.2 or newer, and Sony offers no updates once the
+   bootloader is unlocked.
+2. **Unlock the bootloader** with
+   [Sony's unlock procedure](https://opendevices.sony.net/aosp-on-xperia-open-devices/get-started/unlock-bootloader/):
+   turn on OEM unlocking in the Developer options, get the unlock code for the phone's IMEI 1,
+   and run `fastboot oem unlock 0x<code>` in the bootloader's fastboot mode (section 2, step 2).
+   Unlocking erases the phone.
+3. **Install LineageOS 23.2 for pdx246 on slot a,** complete with its super partition
    (system, system_ext, product, vendor, vendor_dlkm, odm). Sailfish OS runs on top of these
    Android partitions of slot a and never uses slot b. Use the LineageOS build the image is
    made for, currently the build of 2026-09-24:
@@ -26,23 +59,21 @@ boot chain of slot a. This is an unofficial community port, not affiliated with 
    an install that went to slot b has to be repeated so that slot a holds it. The LineageOS
    install also writes `vbmeta_a` with verification disabled, which the unsigned Sailfish OS
    boot image needs.
-3. **Boot LineageOS to the home screen once** and leave it running for a minute, so that the
+4. **Boot LineageOS to the home screen once** and leave it running for a minute, so that the
    Virtual A/B merge completes. Until then, fastbootd refuses to flash userdata.
-4. **Download that release's images** `boot.img`, `vendor_boot.img`, `dtbo.img`,
+5. **Download that release's images** `boot.img`, `vendor_boot.img`, `dtbo.img`,
    `vendor_dlkm.img` and `recovery.img`, and check them against its `SHA256SUMS` (the first
    four are extracted from the OTA zip and match the hashes recorded in it). They are the only
    way back: slot b holds no bootable LineageOS (Virtual A/B keeps one copy of the dynamic
    partitions), and the Sailfish OS kernel and the LineageOS modules do not mix, so going back
    means flashing all of them. Flashing again over Sailfish OS needs the first three
    (section 4).
-5. Use a recent Android platform-tools `fastboot` (34 or newer).
+6. Use a recent Android platform-tools `fastboot` (34 or newer).
 
 ## 2. Flashing
 
-**From the browser:** the [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/) does what the steps below do, and
-sections 4 and 5 as well, from Chrome, Edge or Brave over USB. It reads the zip as downloaded
-and checks it before it writes anything, and it says what Linux or Windows may need first. It
-is new and has been tested on one phone so far: `flash.sh` remains the reference.
+**From the browser:** the [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/)
+does what the steps below do (see the start of this document).
 
 1. Extract the zip (`Sailfish_OS-5.2.0.22-pdx246-<version>.zip`) and enter the directory.
 2. Power the phone off, then hold **volume up** while plugging in the USB cable: the bootloader's
