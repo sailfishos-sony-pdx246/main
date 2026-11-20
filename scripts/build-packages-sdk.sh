@@ -7,8 +7,9 @@
 #   $PLATFORM_SDK_ROOT/sdks/sfossdk/sdk-chroot bash /parentroot<this repo>/scripts/build-packages-sdk.sh [step...]
 # The tree is ANDROID_ROOT from ~/.hadk.env; logs go to $PDX246_LOG_DIR, by default to
 # build-logs/ next to the tree.
-# Steps, in order (default: all): d c pa mw dynparts geoclue imsqti nfc bthelper g imgboot v i
-# Extra steps (not in the default list): libhybris, padroid, waydroid, runner
+# Steps, in order (default: all): d c pa mw dynparts geoclue imsqti nfc bthelper dnsmasq
+#   gbinder-python waydroid-sensors waydroid runner g imgboot v i
+# Extra steps (not in the default list): libhybris, padroid
 # Each step logs to pkg-<date>-<step>.log and the run stops at the first failure,
 # so it can be resumed by naming the remaining steps.
 # After d, always rebuild imgboot too: droid-hal-pdx246-img-boot requires the exact
@@ -28,7 +29,8 @@ LOGDIR=${PDX246_LOG_DIR:-$(dirname "$ANDROID_ROOT")/build-logs}
 BP=rpm/dhd/helpers/build_packages.sh
 cd "$ANDROID_ROOT" || { echo "no ANDROID_ROOT $ANDROID_ROOT"; exit 1; }
 mkdir -p "$LOGDIR" || { echo "cannot create $LOGDIR"; exit 1; }
-[ "$#" -gt 0 ] || set -- d c pa mw dynparts geoclue imsqti nfc bthelper g imgboot v i
+[ "$#" -gt 0 ] || set -- d c pa mw dynparts geoclue imsqti nfc bthelper dnsmasq gbinder-python \
+	waydroid-sensors waydroid runner g imgboot v i
 
 run() {
 	local step=$1; shift
@@ -53,6 +55,19 @@ run() {
 config_in() {
 	sdk-assistant -y maintain "$VENDOR-$DEVICE-$PORT_ARCH" zypper -n \
 		--plus-repo "$ANDROID_ROOT/droid-local-repo/$DEVICE" in "droid-config-$DEVICE"
+}
+
+# Packaging repos with the source as the submodule upstream/: mb2 builds in place inside
+# upstream/ and skips %prep, so with "patch" the spec's patches are applied here, in spec
+# order. upstream/ is put back on the commit the packaging repo records before and after the
+# build (the build leaves its output there).
+# usage: upstream_mw step directory-in-hybris/mw spec [patch]
+upstream_mw() {
+	local step=$1 dir=hybris/mw/$2 spec=$3 patch=${4:-}
+	run $step-clean sh -c "[ -e $dir/upstream/.git ] || { echo '$dir/upstream is not checked out: git -C $dir submodule update --init'; exit 1; }; git -C $dir submodule update -q --force upstream && git -C $dir/upstream clean -fdxq"
+	[ -z "$patch" ] || run $step-patch sh -c "cd $dir && for p in \$(sed -n 's/^Patch[0-9]*:[[:space:]]*//p' $spec); do echo \"applying \$p\"; git -C upstream apply \"../rpm/\$p\" || exit 1; done"
+	run $step $BP -o -N --mw=$2 --spec=$spec
+	run $step-reset sh -c "git -C $dir submodule update -q --force upstream && git -C $dir/upstream clean -fdxq"
 }
 
 case " $* " in *" d "*) case " $* " in *" imgboot "*) ;; *) echo "Note: step d without imgboot; the image step will fail on the img-boot version pin." ;; esac ;; esac
@@ -103,20 +118,30 @@ for step in "$@"; do
 	# libhybris alone (the mw step also builds it): branch pdx246-0.0.5.58 = 0.0.5.58 plus 'keep
 	# libcutils loaded at exit' (getprop/setprop aborted in the atexit dlclose). Not in the default list.
 	libhybris) run libhybris $BP -o --mw=libhybris --spec=rpm/libhybris.spec ;;
-	# Waydroid (not in the image; users install it with droid-config-pdx246-waydroid):
-	# sailfishos-open/waydroid at hybris/mw/waydroid, branch pdx246-1.6.3 (upstream 1.6.3 as
-	# submodule, patches in rpm/). mb2 builds in place inside upstream/ and skips %prep, so
-	# the patches would silently be left out (the first build packaged plain 1.6.3,
-	# 2026-10-23); %prep must not run in place either, %setup would remove upstream/. So the
-	# spec's patches are applied here, in spec order, on the clean tag, and the submodule is
-	# put back on the clean tag afterwards.
+	# Waydroid's dependencies that Jolla's repositories do not have. dnsmasq: the port's
+	# packaging of dnsmasq 2.93, the program only (Waydroid runs it on its container network).
+	# Not in hybris/mw/dnsmasq: build_packages.sh would build AOSP's external/dnsmasq instead.
+	dnsmasq) upstream_mw dnsmasq dnsmasq-pdx246 rpm/dnsmasq.spec ;;
+	# python3-gbinder: sailfishos-chum/gbinder-python with the port's spec fix, branch
+	# pdx246-1.3.1; its only patch is for Cython before 3, so none is applied.
+	gbinder-python) upstream_mw gbinder-python gbinder-python rpm/gbinder-python.spec ;;
+	# waydroid-sensors: sailfishos-open/waydroid-sensors unchanged; its patch (cstdint) is
+	# needed with GCC 13.
+	waydroid-sensors) upstream_mw waydroid-sensors waydroid-sensors rpm/waydroid-sensors.spec patch ;;
+	# Waydroid (in the image through the configuration pattern, dormant until the Waydroid app
+	# sets Android up): sailfishos-open/waydroid at hybris/mw/waydroid, branch pdx246-1.6.3
+	# (upstream 1.6.3 as submodule, patches in rpm/). mb2 builds in place inside upstream/ and
+	# skips %prep, so the patches would silently be left out (the first build packaged plain
+	# 1.6.3, 2026-10-23); %prep must not run in place either, %setup would remove upstream/. So
+	# the spec's patches are applied here, in spec order, on the clean tag, and the submodule
+	# is put back on the clean tag afterwards.
 	# -N: the version comes from the spec, not from the packaging repo's tags.
 	# Without a checked-out submodule, git -C upstream would act on the packaging repo itself.
 	waydroid) run waydroid-clean sh -c '[ -e hybris/mw/waydroid/upstream/.git ] || { echo "hybris/mw/waydroid/upstream is not checked out: git -C hybris/mw/waydroid submodule update --init"; exit 1; }; git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq'
 	          run waydroid-patch sh -c 'cd hybris/mw/waydroid && for p in $(sed -n "s/^Patch[0-9]*:[[:space:]]*//p" rpm/waydroid.spec); do echo "applying $p"; git -C upstream apply "../rpm/$p" || exit 1; done'
 	          run waydroid $BP -o -N --mw=waydroid --spec=rpm/waydroid.spec
 	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
-	# Waydroid's window (not in the image either): the sailfishos-open/waydroid-runner fork at
+	# Waydroid's window (in the image too): the sailfishos-open/waydroid-runner fork at
 	# hybris/mw/waydroid-runner, branch pdx246-0.3.1 = 0.3.1 plus the background mode (Android keeps
 	# running when the window is closed, or stops with it as set in Settings > Apps > Waydroid), app
 	# launching (Android apps' launchers, notification taps) and Android's setup at the first start.

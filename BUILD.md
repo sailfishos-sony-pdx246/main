@@ -115,14 +115,16 @@ mkdir -p .repo/local_manifests
 cp <main>/local_manifests/*.xml .repo/local_manifests/
 repo sync -c -j8 --no-clone-bundle --retry-fetches=2 --force-sync
 for p in rpm hybris/droid-configs hybris/droid-hal-version-pdx246 \
-        hybris/mw/droid-hal-img-boot-pdx246 hybris/mw/libhybris hybris/mw/waydroid; do
+        hybris/mw/droid-hal-img-boot-pdx246 hybris/mw/libhybris hybris/mw/waydroid \
+        hybris/mw/dnsmasq-pdx246 hybris/mw/gbinder-python hybris/mw/waydroid-sensors; do
     git -C $p submodule update --init --recursive
 done
 ```
 
-The last loop checks out the submodules of the adaptation repositories, libhybris and Waydroid
-(mer-hybris' droid-hal-device with `build_packages.sh`, the templates, the initramfs, libhybris'
-source, Waydroid's upstream source):
+The last loop checks out the submodules of the adaptation repositories, libhybris, Waydroid and
+Waydroid's dependencies (mer-hybris' droid-hal-device with `build_packages.sh`, the templates,
+the initramfs, libhybris' source, the upstream sources of Waydroid, dnsmasq, gbinder-python and
+waydroid-sensors):
 `repo sync` records them but does not check them out.
 
 - **Never** pass `--reference <your LineageOS checkout>` to `repo init`: it borrows objects
@@ -216,8 +218,10 @@ each package's version from `git describe --tags`; the forks carry the upstream 
 | `hybris/mw/libncicore` | mer-hybris/libncicore | pdx246-1.2.0 (aa586b5) | NFC reader polling |
 | `hybris/mw/nfcd-binder-plugin` | mer-hybris/nfcd-binder-plugin | pdx246-1.2.1 (9be7676) | NFC core initialisation |
 | `hybris/mw/droid-bthelper` | sailfishos-sony-nagara droid-bthelper | pdx246-0.3.0 (34f77d1; needs tag `0.3.0`) | Bluetooth headset calls |
-| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (78042d6; patches in `rpm/`) | Android apps (not in the image) |
-| `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (8cfec95) | Android's window; sets Android up at the first start; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid (not in the image) |
+| `hybris/mw/waydroid` | sailfishos-open/waydroid (upstream 1.6.3 as submodule `upstream`) | pdx246-1.6.3 (78042d6; patches in `rpm/`) | Android apps |
+| `hybris/mw/waydroid-runner` | sailfishos-open/waydroid-runner | pdx246-0.3.1 (8cfec95) | Android's window; sets Android up at the first start; Android keeps running when it is closed (a setting can make closing stop it), Android apps open from the app grid |
+| `hybris/mw/gbinder-python` | sailfishos-chum/gbinder-python (upstream as submodule `upstream`) | pdx246-1.3.1 (7279310) | python3-gbinder for Waydroid; the spec parses where `sailfishos_version` is not defined, as in the Platform SDK |
+| `hybris/mw/dnsmasq-pdx246` | this port (dnsmasq 2.93 as submodule `upstream`) | main (ab82114) | dnsmasq for Waydroid's container network, not in Jolla's repositories; not `hybris/mw/dnsmasq`, which `build_packages.sh` would take for AOSP's `external/dnsmasq` |
 | `hybris/mw/pulseaudio-modules-droid` | mer-hybris/pulseaudio-modules-droid | pdx246-14.2.110 (bfe2cf3; 14.2.110 is the version in Sailfish OS 5.2.0.22) | PulseAudio crashed at every stop (with `unload_call_exit` in droid-configs) |
 | `hybris/mw/droid-hal-img-boot-pdx246` | this port | main | boot and recovery image package |
 
@@ -231,12 +235,13 @@ And the adaptation repositories, at the paths the HADK scripts expect:
 
 `sailfish.xml` also pins the default middleware to the commits the port is tested with:
 pulseaudio-modules-droid-hidl 818df80, qt5-qpa-hwcomposer-plugin 31f4f65, parse-android-dynparts
-4e6f70f, community-adaptation 8afd975. sensorfw's binder backend
+4e6f70f, community-adaptation 8afd975, and sailfishos-open/waydroid-sensors 8c667de (unchanged;
+Waydroid's sensors, not in Jolla's repositories either). sensorfw's binder backend
 for AIDL sensors (hybris-libsensorfw-qt5-binder 0.15.2) comes from Jolla's adaptation-common
 repository since 5.2; for 5.1 the port built it from source.
 
 Then, from the host (asks for the `sudo` password once, through `sdk-chroot`; the steps never
-prompt, so the run can be left alone: all packages in about 20 minutes, the image in about 7):
+prompt, so the run can be left alone: all packages in about 25 minutes, the image in about 7):
 
 ```sh
 /srv/sailfishos/sdks/sfossdk/sdk-chroot bash /parentroot<main>/scripts/build-packages-sdk.sh
@@ -252,12 +257,13 @@ can be resumed with the remaining steps):
 | `pa` | checks out pulseaudio-modules-droid at the pinned commit (built by `mw`) |
 | `mw` | the default middleware set, including libhybris, without mce-plugin-libhybris (only LED backends; the phone has no notification LED) |
 | `dynparts`, `geoclue`, `imsqti`, `nfc`, `bthelper` | the middleware above |
+| `dnsmasq`, `gbinder-python`, `waydroid-sensors` | Waydroid's dependencies that Jolla's repositories do not have. mb2 skips `%prep`, so the steps apply a spec's patches themselves where needed (waydroid-sensors' for GCC 13) |
+| `waydroid` | Waydroid 1.6.3 with the port's patches, applied by the step for the same reason |
+| `runner` | waydroid-runner 0.7.1 with the background mode, app launching, the close setting and Android's setup at the first start |
 | `g` | droidmedia (from `external/droidmedia`) |
 | `imgboot` | droid-hal-pdx246-img-boot (always after `d`: it requires the exact version of the dtbo package) |
 | `v` | droid-hal-version-pdx246 |
 | `i` | the image, with `mic` |
-| `waydroid` | Waydroid 1.6.3 with the port's patches (only when named; not in the image, see INSTALL.md section 8). mb2 skips `%prep`, so the step applies the spec's patches itself |
-| `runner` | waydroid-runner 0.7.1 with the background mode, app launching, the close setting and Android's setup at the first start (only when named; not in the image) |
 | `libhybris`, `padroid` | libhybris or pulseaudio-modules-droid alone (only when named; `mw` builds both) |
 
 The image is `$ANDROID_ROOT/SailfishOScommunity-release-5.2.0.22-pdx246/Sailfish_OS-5.2.0.22-pdx246-<version>.zip`,

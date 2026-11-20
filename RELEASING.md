@@ -27,17 +27,20 @@ published. The build itself is described in [BUILD.md](BUILD.md), the installati
    `upstream` branch:
    `git ls-remote https://github.com/sailfishos-sony-pdx246/<name> refs/heads/<branch>`.
 3. Update `README.md` (status, what works, known issues), `INSTALL.md` (image name, LineageOS
-   release, Waydroid package names) and `BUILD.md` (release numbers, branches and commits, steps).
+   release) and `BUILD.md` (release numbers, branches and commits, steps).
 4. If the LineageOS base changes: publish that LineageOS release's `boot.img`, `vendor_boot.img`,
    `dtbo.img`, `vendor_dlkm.img` and `recovery.img` with their `SHA256SUMS` (INSTALL.md section 1
    links them), and move the pins in `local_manifests/pdx246.xml` to that release.
+5. If the release is tested with other Android images for Waydroid: put their entries from
+   Waydroid's channel (ota.waydro.id) into `waydroid-ota` (`system/lineage/waydroid_arm64/VANILLA.json`,
+   `vendor/waydroid_arm64/HALIUM_16.json`) and their dates into INSTALL.md section 8. Phones set
+   Android up from that channel, so its files change only together with a tested release.
 
 ## 2. Build
 
 Build from the pinned commits as BUILD.md describes: the Android half when the kernel, the device
-tree or an Android patch changed (then also steps `d` and `imgboot`), the packages, the image
-(step `i`), and Waydroid's packages (steps `waydroid` and `runner`; `droid-config-pdx246-waydroid`
-comes from step `c`).
+tree or an Android patch changed (then also steps `d` and `imgboot`), the packages (Waydroid and
+its dependencies among them: they are in the image) and the image (step `i`).
 
 Compare the image's `.packages` list with the previous release's: every added, removed or changed
 package should follow from the release's changes or from Jolla's repositories. Test packages and
@@ -56,7 +59,8 @@ describes (a fresh install, not a phone updated package by package), and check:
 - GNSS outdoors, NFC, fingerprint unlock, the sensors (rotation, proximity, light);
 - USB modes (MTP, developer mode, charging only), charging and the charging limit;
 - standby overnight (current and time suspended) and a reboot;
-- Waydroid, installed from the release's packages as INSTALL.md section 8 describes.
+- Waydroid: Android set up from the Waydroid app (INSTALL.md section 8), an Android app with
+  network, and after a reboot no Waydroid until the app is opened.
 
 If `flash-config.sh` changed, also run the new zip through the
 [web installer](https://github.com/sailfishos-sony-pdx246/web-installer) against its simulated
@@ -66,10 +70,7 @@ Fix what fails, or list it in the known issues.
 
 ## 4. Publish
 
-1. Collect the assets: the image zip, its `.packages` list, `waydroid`,
-   `waydroid-gbinder-config-hybris`, `waydroid-runner` and `droid-config-pdx246-waydroid`, and a
-   `SHA256SUMS` of all of them. INSTALL.md points to the latest release for the Waydroid packages,
-   so every release carries them.
+1. Collect the assets: the image zip, its `.packages` list and a `SHA256SUMS` of both.
 2. Write the release notes: what's new, upgrading from the previous release, before you install,
    the files with their checksums, what works, known issues, sources and credits.
 3. Check the pushed commits, the release notes and the text assets for private data: IP and MAC
