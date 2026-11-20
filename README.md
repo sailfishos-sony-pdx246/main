@@ -8,11 +8,12 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.2.0.22 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** fifth release (2026-11-01): Sailfish OS 5.2.0.22, with the new browser engine. Download the image from the
+**Status:** sixth release (2026-11-20): Sailfish OS 5.2.0.22, now with Waydroid for Android apps in the image. Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
 [INSTALL.md](INSTALL.md) describes, or from Chrome, Edge or Brave with the
 [web installer](https://sailfishos-sony-pdx246.github.io/web-installer/) (new), or build it yourself ([BUILD.md](BUILD.md)).
-Android apps run with Waydroid, installed separately ([INSTALL.md](INSTALL.md), section 8).
+Android apps run with Waydroid, which is part of the image: the Waydroid app sets Android up at
+its first start ([INSTALL.md](INSTALL.md), section 8).
 
 ## What works
 
@@ -66,7 +67,9 @@ All in [github.com/sailfishos-sony-pdx246](https://github.com/sailfishos-sony-pd
 | `droid-hal-version-pdx246` | image version package |
 | `droid-hal-img-boot-pdx246` | boot and recovery image package |
 | `android_device_sony_pdx246`, `android_kernel_sony_sm6450` | the LineageOS port's device tree and kernel with the Sailfish OS changes (branch `hybris-23.2`) |
-| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid`, `waydroid-runner`, `pulseaudio-modules-droid` | middleware with this port's fixes (branches `pdx246-*`) |
+| `libhybris`, `libhybris-source`, `ofono-binder-plugin-ext-qti`, `geoclue-providers-hybris`, `libncicore`, `nfcd-binder-plugin`, `droid-bthelper`, `waydroid`, `waydroid-runner`, `gbinder-python`, `pulseaudio-modules-droid` | middleware with this port's fixes (branches `pdx246-*`) |
+| `dnsmasq-pdx246` | dnsmasq for Waydroid's container network (Jolla's repositories do not have it) |
+| `waydroid-ota` | Waydroid's download channel: the Android images the port is tested with |
 
 ## Licences
 
