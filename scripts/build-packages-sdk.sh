@@ -137,10 +137,11 @@ for step in "$@"; do
 	# is put back on the clean tag afterwards.
 	# -N: the version comes from the spec, not from the packaging repo's tags.
 	# Without a checked-out submodule, git -C upstream would act on the packaging repo itself.
-	waydroid) run waydroid-clean sh -c '[ -e hybris/mw/waydroid/upstream/.git ] || { echo "hybris/mw/waydroid/upstream is not checked out: git -C hybris/mw/waydroid submodule update --init"; exit 1; }; git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq'
+	# clean -x: ignored files too (Python caches of a host test went into 1.6.3-9).
+	waydroid) run waydroid-clean sh -c '[ -e hybris/mw/waydroid/upstream/.git ] || { echo "hybris/mw/waydroid/upstream is not checked out: git -C hybris/mw/waydroid submodule update --init"; exit 1; }; git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdxq'
 	          run waydroid-patch sh -c 'cd hybris/mw/waydroid && for p in $(sed -n "s/^Patch[0-9]*:[[:space:]]*//p" rpm/waydroid.spec); do echo "applying $p"; git -C upstream apply "../rpm/$p" || exit 1; done'
 	          run waydroid $BP -o -N --mw=waydroid --spec=rpm/waydroid.spec
-	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdq' ;;
+	          run waydroid-reset sh -c 'git -C hybris/mw/waydroid/upstream checkout -q -f 1.6.3 && git -C hybris/mw/waydroid/upstream clean -fdxq' ;;
 	# Waydroid's window (in the image too): the sailfishos-open/waydroid-runner fork at
 	# hybris/mw/waydroid-runner, branch pdx246-0.3.1 = 0.3.1 plus the background mode (Android keeps
 	# running when the window is closed, or stops with it as set in Settings > Apps > Waydroid), app

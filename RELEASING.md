@@ -26,11 +26,13 @@ published. The build itself is described in [BUILD.md](BUILD.md), the installati
    pushed, and check that every pin of a `sailfishos-sony-pdx246` project equals the head of its
    `upstream` branch:
    `git ls-remote https://github.com/sailfishos-sony-pdx246/<name> refs/heads/<branch>`.
-3. Update `README.md` (status, what works, known issues), `INSTALL.md` (image name, LineageOS
-   release) and `BUILD.md` (release numbers, branches and commits, steps).
-4. If the LineageOS base changes: publish that LineageOS release's `boot.img`, `vendor_boot.img`,
-   `dtbo.img`, `vendor_dlkm.img` and `recovery.img` with their `SHA256SUMS` (INSTALL.md section 1
-   links them), and move the pins in `local_manifests/pdx246.xml` to that release.
+3. Update `README.md` (status, what works, known issues), `INSTALL.md` (image name, the tested
+   LineageOS builds) and `BUILD.md` (release numbers, branches and commits, steps).
+4. Sailfish OS runs on any LineageOS 23.2 build for pdx246 (Android 16); INSTALL.md section 1
+   names the builds it was tested with. When a newer 23.2 build is out, test the release on it
+   (section 3) and add it to INSTALL.md and to the web installer (section 4, step 8). The device
+   repositories in `local_manifests/pdx246.xml` are the sources of the port's own kernel and
+   device tree; they move only when those are rebased.
 5. If the release is tested with other Android images for Waydroid: put their entries from
    Waydroid's channel (ota.waydro.id) into `waydroid-ota` (`system/lineage/waydroid_arm64/VANILLA.json`,
    `vendor/waydroid_arm64/HALIUM_16.json`) and their dates into INSTALL.md section 8. Phones set
@@ -48,8 +50,8 @@ debugging aids installed on a test phone by hand never belong in the image.
 
 ## 3. Test
 
-Flash the image with `flash.sh` onto a phone running the pinned LineageOS release, as INSTALL.md
-describes (a fresh install, not a phone updated package by package), and check:
+Flash the image with `flash.sh` onto a phone running the newest LineageOS 23.2 build, as
+INSTALL.md describes (a fresh install, not a phone updated package by package), and check:
 
 - the first start: language, encryption, security code, setup;
 - calls over VoLTE (ringback tone, DTMF, hold, conference), SMS both ways, mobile data;
@@ -86,6 +88,7 @@ Fix what fails, or list it in the known issues.
    `gh api -X PATCH repos/sailfishos-sony-pdx246/main/releases/<id> -F draft=false -f make_latest=true`.
 8. Add the release to the web installer: its tag, image file name, size and SHA-256 in `releases`
    in `js/device-pdx246.js` of `web-installer`, and push; GitHub Pages publishes it within a
-   minute. Until then the page warns that the image is unknown. A new LineageOS base also needs
-   its tag and its image sums under `lineage`, and its OTA zip's name, size and SHA-256 under
-   `lineage.zips`, which the option "Install Sailfish OS from Sony's Android" installs from.
+   minute. Until then the page warns that the image is unknown. A newly tested LineageOS build
+   goes first in `lineage.releases`: its tag and link, its OTA zip's name, size and SHA-256 (the
+   page names the newest one for the option "Install Sailfish OS from Sony's Android") and the
+   sums of its images. Other 23.2 builds are accepted with a note.

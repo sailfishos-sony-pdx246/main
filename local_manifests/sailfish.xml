@@ -12,11 +12,11 @@
      the tag), the port's patches in rpm/ (build-packages-sdk.sh step waydroid applies them).
      waydroid-runner is sailfishos-open's runner with the port's background mode (Android keeps
      running when its window is closed, a setting can make closing stop it), Android apps'
-     launchers and Android's setup at the first start. Both are in the image, with Waydroid's
-     dependencies that Jolla's repositories do not have: gbinder-python (sailfishos-chum's
-     packaging with the port's spec fix), dnsmasq-pdx246 (the port's packaging of dnsmasq; not
-     hybris/mw/dnsmasq, which build_packages.sh would take for AOSP's external/dnsmasq) and
-     waydroid-sensors (sailfishos-open's packaging, unchanged). -->
+     launchers, Android's setup at the first start and its removal in Settings. Both are in the
+     image, with Waydroid's dependencies that Jolla's repositories do not have: gbinder-python
+     (sailfishos-chum's packaging with the port's spec fix), dnsmasq-pdx246 (the port's packaging
+     of dnsmasq; not hybris/mw/dnsmasq, which build_packages.sh would take for AOSP's
+     external/dnsmasq) and waydroid-sensors (sailfishos-open's packaging, unchanged). -->
 <manifest>
   <remote name="pdx246" fetch="https://github.com/sailfishos-sony-pdx246" />
 
@@ -44,9 +44,9 @@
   <project path="hybris/mw/droid-bthelper" name="droid-bthelper" remote="pdx246"
            revision="34f77d158a8b0423942d52ed06538da1ad860def" upstream="pdx246-0.3.0" />
   <project path="hybris/mw/waydroid" name="waydroid" remote="pdx246"
-           revision="78042d69b971658bf1950c727f9ac2704856269d" upstream="pdx246-1.6.3" sync-s="true" />
+           revision="c9db72fae38db317d33a998e166b21add14bd529" upstream="pdx246-1.6.3" sync-s="true" />
   <project path="hybris/mw/waydroid-runner" name="waydroid-runner" remote="pdx246"
-           revision="8cfec95fe9be5b3ba4ae3300e3b46a6f33ae5d73" upstream="pdx246-0.3.1" />
+           revision="f75086b304dc27a9d2f6c3d0b69306fa5243eb9a" upstream="pdx246-0.3.1" />
   <project path="hybris/mw/gbinder-python" name="gbinder-python" remote="pdx246"
            revision="72793102dd22122b7aa8efcdc18fbb7d45657cfb" upstream="pdx246-1.3.1" sync-s="true" />
   <project path="hybris/mw/dnsmasq-pdx246" name="dnsmasq-pdx246" remote="pdx246"
