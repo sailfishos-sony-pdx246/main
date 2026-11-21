@@ -27,9 +27,9 @@ There are two ways to install it:
     phone's IMEI 1 from
     [Sony's unlock page](https://opendevices.sony.net/aosp-on-xperia-open-devices/get-started/unlock-bootloader/).
     Unlocking erases the phone and removes Sony's DRM keys for good.
-  - Besides the image zip, the page needs the LineageOS OTA zip
-    `lineage-23.2-20260924-UNOFFICIAL-pdx246.zip` from
-    [release v23.2-20260924](https://github.com/johanneszab/lineageos-pdx246-releases/releases/tag/v23.2-20260924).
+  - Besides the image zip, the page needs a LineageOS 23.2 OTA zip for pdx246, preferably the
+    newest one tested with Sailfish OS: `lineage-23.2-20261102-UNOFFICIAL-pdx246.zip` from
+    [release v23.2-20261102](https://github.com/johanneszab/lineageos-pdx246-releases/releases/tag/v23.2-20261102).
   - This option is new: it has run on a phone with Sailfish OS, not yet on one with Sony's
     Android.
   - The page's other options install over LineageOS, install again (section 4) and go back to
@@ -50,24 +50,24 @@ There are two ways to install it:
    Unlocking erases the phone.
 3. **Install LineageOS 23.2 for pdx246 on slot a,** complete with its super partition
    (system, system_ext, product, vendor, vendor_dlkm, odm). Sailfish OS runs on top of these
-   Android partitions of slot a and never uses slot b. Use the LineageOS build the image is
-   made for, currently the build of 2026-09-24:
-   [release v23.2-20260924](https://github.com/johanneszab/lineageos-pdx246-releases/releases/tag/v23.2-20260924)
-   (the device repositories in [local_manifests/pdx246.xml](local_manifests/pdx246.xml) are
-   pinned to it). Install it the usual LineageOS way, with its `recovery.img` and an
+   Android partitions of slot a and never uses slot b. Any LineageOS 23.2 build for pdx246
+   works ([releases](https://github.com/johanneszab/lineageos-pdx246-releases/releases));
+   Sailfish OS was tested with the builds of 2026-11-02 (v23.2-20261102, the newest) and
+   2026-09-24 (v23.2-20260924). LineageOS 24 does not work: it is Android 17, and Sailfish OS
+   is built for Android 16. Install it the usual LineageOS way, with its `recovery.img` and an
    `adb sideload` of the OTA zip. A sideload and an OTA update both write the inactive slot:
    an install that went to slot b has to be repeated so that slot a holds it. The LineageOS
    install also writes `vbmeta_a` with verification disabled, which the unsigned Sailfish OS
    boot image needs.
 4. **Boot LineageOS to the home screen once** and leave it running for a minute, so that the
    Virtual A/B merge completes. Until then, fastbootd refuses to flash userdata.
-5. **Download that release's images** `boot.img`, `vendor_boot.img`, `dtbo.img`,
-   `vendor_dlkm.img` and `recovery.img`, and check them against its `SHA256SUMS` (the first
-   four are extracted from the OTA zip and match the hashes recorded in it). They are the only
-   way back: slot b holds no bootable LineageOS (Virtual A/B keeps one copy of the dynamic
-   partitions), and the Sailfish OS kernel and the LineageOS modules do not mix, so going back
-   means flashing all of them. Flashing again over Sailfish OS needs the first three
-   (section 4).
+5. **Download the images of the LineageOS release you installed:** `boot.img`,
+   `vendor_boot.img`, `dtbo.img`, `vendor_dlkm.img` and `recovery.img`, and check them against
+   its `SHA256SUMS` (the first four are extracted from the OTA zip and match the hashes recorded
+   in it). They are the only way back: slot b holds no bootable LineageOS (Virtual A/B keeps one
+   copy of the dynamic partitions), and the Sailfish OS kernel and the LineageOS modules do not
+   mix, so going back means flashing all of them. Flashing again over Sailfish OS needs the
+   first three (section 4).
 6. Use a recent Android platform-tools `fastboot` (34 or newer).
 
 ## 2. Flashing
@@ -133,7 +133,7 @@ partition names, flash logical partitions (`vendor_dlkm_a`) from fastbootd only,
 fastbootd cannot be reached while `boot_a` holds Sailfish OS: `fastboot reboot fastboot` then
 just starts Sailfish OS again, and `flash.sh` stops after 90 seconds (nothing has been written;
 on a computer without the `timeout` command it waits until you press Ctrl-C). So first enter
-the bootloader and flash the saved LineageOS images of the release to slot a:
+the bootloader and flash the saved images of your LineageOS release to slot a:
 
 ```sh
 fastboot flash boot_a <LineageOS boot.img>
@@ -194,9 +194,14 @@ What to expect:
 then downloads the Android images the port is tested with, LineageOS 20's system of 2026-09-27
 and vendor of 2026-10-22 (about 950 MB, from Waydroid's mirror on SourceForge), checks their
 SHA-256 sums and unpacks them. This takes a few minutes and needs about 3 GB free in /home; use
-Wi-Fi. **Cancel** stops it, and **Try again** starts over. Android then starts in the window
-after about half a minute. Install Android apps inside Android, for example F-Droid from
+Wi-Fi. If the download server stops sending, Waydroid continues where it stopped after 30
+seconds. **Cancel** stops the setup, and **Try again** starts over. Android then starts in the
+window after about half a minute. Install Android apps inside Android, for example F-Droid from
 f-droid.org in Android's browser.
+
+**Removing Android:** **Remove Android** in Settings, Apps, Waydroid stops Android and deletes
+it with its apps and their data, which frees its space (about 2 GB, plus the apps). Opening
+Waydroid then offers to set Android up again.
 
 Waydroid's service starts when Waydroid is opened, not at boot: a phone that never sets Android
 up runs no Android. Flashing a new image (section 4) erases Android with the rest of /home; set
@@ -210,5 +215,6 @@ start Android with `waydroid show-full-ui` or install the waydroid-settings pack
 appears in Sailfish OS's own window manager, where it gets no touch input.
 
 **Do not remove Waydroid's packages:** they belong to the image's configuration pattern, and
-removing them also removes that pattern and droid-hal-version-pdx246. Android's system and data
-are in `/home/waydroid` and in `.local/share/waydroid` in your home folder.
+removing them also removes that pattern and droid-hal-version-pdx246. To free Android's space,
+remove Android in Settings instead (above). Android's system and data are in `/home/waydroid`
+and in `.local/share/waydroid` in your home folder.

@@ -8,12 +8,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 A community port of Sailfish OS 5.2.0.22 to the Sony Xperia 10 VI (XQ-ES54, XQ-ES72), built
 with libhybris on top of the LineageOS 23.2 (Android 16) port for the same phone.
 
-**Status:** sixth release (2026-11-20): Sailfish OS 5.2.0.22, now with Waydroid for Android apps in the image. Download the image from the
+**Status:** seventh release (2026-11-21): Sailfish OS 5.2.0.22 on any LineageOS 23.2 build for
+pdx246 (tested with the builds of 2026-11-02 and 2026-09-24). Download the image from the
 [releases](https://github.com/sailfishos-sony-pdx246/main/releases/latest) and flash it as
 [INSTALL.md](INSTALL.md) describes, or from Chrome, Edge or Brave with the
-[web installer](https://sailfishos-sony-pdx246.github.io/web-installer/) (new), or build it yourself ([BUILD.md](BUILD.md)).
+[web installer](https://sailfishos-sony-pdx246.github.io/web-installer/), or build it yourself ([BUILD.md](BUILD.md)).
 Android apps run with Waydroid, which is part of the image: the Waydroid app sets Android up at
-its first start ([INSTALL.md](INSTALL.md), section 8).
+its first start, and Settings can remove it again ([INSTALL.md](INSTALL.md), section 8).
 
 ## What works
 
